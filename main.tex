@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\oddsidemargin .1cm
+\evensidemargin .1cm
+\textwidth 16.5cm
+\topmargin -2truecm
+\textheight 23cm
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{nameref, hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,calc,positioning}
+\usepackage[ruled]{algorithm2e}
+\usepackage[font=footnotesize,labelfont=bf]{caption}
+
+
+\usepackage[
+backend=biber,
+bibencoding=utf8,
+style=apa,
+citestyle=authoryear,
+sorting=ynt,
+doi=false,
+eprint=false,
+natbib=true, % agrego MP
+uniquename=false,
+language=english
+]{biblatex}
+\addbibresource{bibliography.bib}
+\AtBeginBibliography{\small}
+
+
+% Commands
+\renewcommand{\v}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\gv}[1]{\ensuremath{\mbox{\boldmath$ #1 $}}}
+
+% Revisions
+\newcommand{\ma}[1]{\textcolor{red}{#1}}
+\newcommand{\tjc}[1]{\textcolor{blue}{#1}}
+\usepackage{soul}
+\newcommand{\me}[1]{\st{#1}}
+
+\title{Asimilación de datos y tratamiento de errores en modelos epidemiológicos}
+\date{}
+\author{Tadeo Javier Cocucci}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    Un resumen del trabajo.
+\end{abstract}
+
+\newpage
+\tableofcontents
+
+\section{Introducción}
+\include{chapters/01_intro}
+
+\section{Asimilación de datos}
+    \include{chapters/02_data_assimilation}
+    \subsection{State-space model}
+    \subsection{Técnicas por ensmbles}
+        \subsubsection{EnKF}
+        \subsubsection{Bootstrap PF}
+        \subsubsection{VMPF}
+    \subsection{Colapso de ensamble}
+    \subsection{Estado aumentado}
+    \subsection{Error observacional y de modelo}
+    \subsection{Batch EM}
+    \subsection{Online EM}
+    \subsection{Leaky gradient}
+
+\section{Modelos epidemiológicos}
+    \subsection{Modelos compartimentales}
+    \subsection{Inferencia en modelos epidemiológicos}
+    \subsection{Modelos basados en agentes}
+    \subsection{Asimilación de datos en ABMs}
+
+\section{Experimentos}
+
+\section{Conclusiones}
+
+\section{Bibliography}
+\printbibliography[heading=none]
+
+\end{document}
