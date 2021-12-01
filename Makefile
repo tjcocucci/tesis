@@ -3,17 +3,12 @@ FIGFILES := $(wildcard *.eps)
 BIBFILES=bibliography.bib
 CHAPTERS=chapters
 
-all:
-
-main-bibtex:
-	pdflatex $(FILENAME).tex
-	bibtex $(FILENAME).aux
-	pdflatex $(FILENAME).tex
+all: $(FILENAME).bbl
 	pdflatex $(FILENAME).tex
 
-main-biber:
+$(FILENAME).bbl:
 	pdflatex $(FILENAME).tex
-	biber $(FILENAME).aux
+	biber $(FILENAME)
 	pdflatex $(FILENAME).tex
 	pdflatex $(FILENAME).tex
 
