@@ -9,6 +9,7 @@
 \textheight 23cm
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{enumitem}
 \usepackage{nameref, hyperref}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows,calc,positioning}
@@ -58,28 +59,15 @@ language=english
 \newpage
 \tableofcontents
 
+\newpage
 \section{Introducción}
 \include{chapters/01_intro}
 
 \section{Asimilación de datos}
-    \include{chapters/02_data_assimilation}
-    \subsection{State-space model}
-    \subsection{Técnicas por ensmbles}
-        \subsubsection{EnKF}
-        \subsubsection{Bootstrap PF}
-        \subsubsection{VMPF}
-    \subsection{Colapso de ensamble}
-    \subsection{Estado aumentado}
-    \subsection{Error observacional y de modelo}
-    \subsection{Batch EM}
-    \subsection{Online EM}
-    \subsection{Leaky gradient}
+\include{chapters/02_data_assimilation}
 
 \section{Modelos epidemiológicos}
-    \subsection{Modelos compartimentales}
-    \subsection{Inferencia en modelos epidemiológicos}
-    \subsection{Modelos basados en agentes}
-    \subsection{Asimilación de datos en ABMs}
+\include{chapters/03_epi_models}
 
 \section{Experimentos}
 
