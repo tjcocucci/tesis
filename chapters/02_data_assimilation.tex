@@ -1,4 +1,4 @@
-\subsection{Asimilación de datos como un problema de inferencia bayesiana}
+\section{Asimilación de datos como un problema de inferencia bayesiana}
 
 La asimilación de datos busca hacer inferencia sobre variables de estado $\v x$ incorporando información observacional $\v y$. Si pensamos en la distribución de probabilidad de $\v x$, el objetivo será encontrar $p(\v x | \v y)$, la distribución \textit{a posteriori}. En este tipo de escenarios, es natural aplicar la regla de Bayes para obtener
 \begin{align*}
@@ -6,7 +6,7 @@ La asimilación de datos busca hacer inferencia sobre variables de estado $\v x$
 \end{align*}
 donde $p(\v y | \v x)$ es la verosimilitud, $p(\v x)$ es la distribución \textit{a priori} de las variables de estado y va a estar determinada por nuestro modelo de pronóstico, mientras que $p(\v y)$ puede ser vista como una constante de normalización. La verosimilitud se interpreta como una función de $\v x$ y nos informa cuán factible es que la observación $\v y$ haya sido producida por el estado $\v x$. La verosimilitud de $\v x$ habiéndose observado $\v y$ se suele denotar como $\mathcal{L}(\v x ; \v y)$ para enfatizar que no es una densidad de probabilidad y que es función de $\v x$. La verosimilitud va a estar determinada por el modelo observacional, que es la representación de cómo se obtiene un dato desde las variables de estado.
 
-\subsubsection{State-space model}
+\subsection{State-space model}
 
 Si consideramos que tenemos un proceso en el que las variables de estado evolucionan temporalmente, podemos denotar a un conjunto de realizaciones del proceso como $\v x_{0:t} = \v x_0, ..., \v x_t$ y, de manera similar, a las observaciones sobre ese proceso como $\v y_{1:t} = \v y_1, ..., \v y_t$. Las variables de estado evolucionan del tiempo $t$ al $t+1$ a través de un modelo $\mathcal{M}_t$ y a su vez, el modelo observacional $\mathcal{H}_t$ es el que representa como se obtiene la observación $\v y_t$ del estado $\v x_t$: 
 \begin{align}
@@ -25,20 +25,19 @@ Notemos además que la ecuación \ref{eq:transition} determina una probabilidad 
 Si no hacemos suposiciones sobre el modelo $\mathcal{M}$ es difícil saber cual será el efecto de la propagación hacia adelante, incluso si la distribución inicial de $\v x_0$ es sencilla. Modelos no lineales de baja dimensionalidad pueden llevar a que una distribución inicial gaussiana resulte multimodal al ser evolucionada hacia adelante. 
 [[posible grafica de lorenz63]]
 
-\subsubsection{Modelo de Markov escondido}
+\subsection{Modelo de Markov escondido}
 
-El modelo propuesto por las ecuaciones \ref{eq:transition} y \ref{eq:observation} es un modelo de Markov escondido ya que cumple con dos importantes propiedades: 
+El modelo propuesto por las ecuaciones \ref{eq:transition} y \ref{eq:observation} constituye un modelo de Markov escondido. En este tipo de representaciones, se tiene que las variables de estado $\{\v x_t\}_{t \ge 0}$ son una cadena de Markov la cual no es directamente observable. A las variables $\v x_t$ se las llama variables escondidas o latentes. A su vez, la información sobre esta cadena proviene de un proceso que sí es observable $\{\v y_t\}_{t \ge 1}$. La figura \ref{dia:hmm} representa este tipo de configuración. En este esquema, buscamos inferir sobre el estado escondido utilizando la información del proceso observable. Más formalmente, las propiedades que definen a un proceso de Markov escondido son: 
 \begin{enumerate}
-    \item El proceso $\{\v x_t\}_{t \ge 0}$ es una cadena de Markov lo que significa que el proceso "no tiene memoria", es decir que $p(\v x_t | \v x_{0:t-1}) = p(\v x_t | \v x_{t-1})$: si el estado a tiempo $t-1$ está determinado, $x_t$ depende sólo de este y no de estados anteriores. Esto permite escribir:
+    \item \textbf{El proceso $\{\v x_t\}_{t \ge 0}$ es una cadena de Markov} lo que significa que el proceso "no tiene memoria", es decir que $p(\v x_t | \v x_{0:t-1}) = p(\v x_t | \v x_{t-1})$: si el estado a tiempo $t-1$ está determinado, $x_t$ depende sólo de este y no de estados anteriores. Esto permite escribir:
     \begin{align*}
-        p(\v x_{1:t}) = p(\v x_0) \prod_{k=1}^{t} p(\v x_k | \v x_{k-1})
+        p(\v x_{0:t}) = p(\v x_0) \prod_{k=1}^{t} p(\v x_k | \v x_{k-1})
     \end{align*}
-    \item Las observaciones son condicionalmente independientes \label{itm:2} lo cual implica que $p(\v y_t | \v x_{0:t}) = p(\v y_t | \v x_t)$, es decir que la observación a tiempo $t$ sólo depende del estado a tiempo $t$ (y no de otros). Esto además resulta en que:
+    \item \textbf{Las observaciones son condicionalmente independientes}  lo cual implica que $p(\v y_t | \v x_{0:t}) = p(\v y_t | \v x_t)$, es decir que la observación a tiempo $t$ sólo depende del estado a tiempo $t$ (y no de otros). Esto además resulta en que:
     \begin{align*}
-        p(\v y_{1:t} | \v x_{0:t}) = p(\v x_0) \prod_{k=1}^{t} p(\v y_k | \v x_k)
+        p(\v y_{1:t} | \v x_{0:t}) = \prod_{k=1}^{t} p(\v y_k | \v x_k)
     \end{align*}
 \end{enumerate}
-Los modelos de Markov escondidos pueden ser esquematizados como en la figura \ref{dia:hmm}.
 
 \begin{figure}
     \centering
@@ -68,7 +67,7 @@ Los modelos de Markov escondidos pueden ser esquematizados como en la figura \re
     \caption{Esquematización de un modelo de Markov escondido} \label{dia:hmm}
 \end{figure}
 
-\subsubsection{Predicción, filtrado y suavizado}
+\subsection{Predicción, filtrado y suavizado}
 
 Las técnicas de asimilación de datos buscan hacer inferencia estadística en state-space models, es decir que la distribución de interés es $p(\v x | \v y)$. Sin embargo, dado que tenemos muchas realizaciones en el tiempo para $x$ e $y$, debemos ser más específicos. Habitualmente distinguimos 3 distribuciones objetivo de interés:
 \begin{itemize}
@@ -77,7 +76,11 @@ Las técnicas de asimilación de datos buscan hacer inferencia estadística en s
     \item La distribución suavizante $p(\v x_t | \v y_{1:s})$ con $s > t$ que puede ser interpretada como un reanálisis del estado habiendo colectado observaciones futuras al momento sobre el que se hace inferencia.
 \end{itemize}
 
-\subsubsection{Algoritmo \textit{forward-backward}}
+\subsection{Algoritmo \textit{forward-backward}}
+
+En modelos de Markov escondidos, bajo la suposición de que contamos con un modelo de la distribución inicial del estado $p(\v x_0)$, el modelo de transición $p(\v x_t | \v x_{t-1})$ y el modelo observacional $p(\v y_t | \v x_t)$ se puede deducir un algoritmo para obtener de manera secuencial las distribuciones suavizantes. Además, como un subproducto se obtienen las distribuciones filtrantes y las de pronóstico con un grado de separación temporal. 
+
+El algoritmo consiste de dos pases, el forward-pass en el que, de manera secuencial se incorpora
 
 Las propiedades del modelo de Markov escondido permiten deducir un método secuencial para obtener la distribución filtrante y suavizante para todo $t > 0$.
 
@@ -85,7 +88,7 @@ Si suponemos qu tenemos la distribución filtrante en el tiempo $t-1$ podemos ob
 \begin{align}
     p(\v x_t | \v y_{1:t-1}) &= \int p(\v x_t, \v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Marginalización}\\
     &= \int p(\v x_t | \v x_{t-1}, \v y_{1:t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Bayes}\\
-    &=\int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Independencia condicional}
+    &=\int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Propiedades HMM}
 \end{align}
 
 Por otro lado, para obtener la distribución filtrante podemos usar la distribución predictiva e incorporar la información de la observación $\v y_t$ de la siguiente manera.
@@ -95,7 +98,7 @@ Por otro lado, para obtener la distribución filtrante podemos usar la distribuc
             {p(\v y_t | \v x_t \v y_{1:t-1}) p(\v x_t | \v y_{1:t-1})}
             {p(\v y_t | \v y_{1:t-1})} && \text{Bayes}\\
     &= \frac{p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})}
-            {p(\v y_t | \v y_{1:t-1})} && \text{Independencia condicional}\\
+            {p(\v y_t | \v y_{1:t-1})} && \text{Propiedades HMM}\\
     &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})
 \end{align}
 
@@ -108,7 +111,7 @@ Para calcular la distribución suavizante hacemos:
         && \text{Marginalización} \\
     &= \int p(\v x_t | \v x_{t+1}, \v y_{1:t})
              p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
-        && \text{Independencia condicional} \\
+        && \text{Propiedades HMM} \\
     &= \int \frac{p(\v x_{t+1} | \v x_t, \v y_{1:t})p(\v x_t |\v y_{1:t})}
             {p(\v x_{t+1} |\v y_{1:t})}
             p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
@@ -116,7 +119,7 @@ Para calcular la distribución suavizante hacemos:
     &= \int \frac{p(\v x_{t+1} | \v x_t)p(\v x_t |\v y_{1:t})}
             {p(\v x_{t+1} |\v y_{1:t})}
             p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
-        && \text{Independencia condicional}
+        && \text{Propiedades HMM}
 \end{align}
 
 
@@ -165,17 +168,14 @@ Para calcular la distribución suavizante hacemos:
     \caption{Algoritmo forward filter backward smoothing}
 \end{algorithm}
 
-
-
-\subsection{Filtro de Kalman}
-
-\subsection{Técnicas por ensmbles}
-    \subsubsection{EnKF}
-    \subsubsection{Colapso de ensamble}
-    \subsubsection{Bootstrap PF}
-    \subsubsection{VMPF}
-\subsection{Estado aumentado}
-\subsection{Error observacional y de modelo}
-\subsection{Batch EM}
-\subsection{Online EM}
-\subsection{Leaky gradient}
+\section{Filtro de Kalman}
+\section{Técnicas por ensmbles}
+    \subsection{EnKF}
+    \subsection{Colapso de ensamble}
+    \subsection{Bootstrap PF}
+    \subsection{VMPF}
+\section{Estado aumentado}
+\section{Error observacional y de modelo}
+    \subsection{Batch EM}
+    \subsection{Online EM}
+    \subsection{Leaky gradient}
