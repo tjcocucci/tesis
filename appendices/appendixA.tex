@@ -1,1 +1,85 @@
-\section{Inferencia bayesiana}
+\chapter{Algoritmo \textit{forward-backward}}\label{appendix:ffbs}
+
+El algoritmo forward-backward está especificado en \ref{algo:ffbs}. 
+
+\begin{algorithm}[H]\label{algo:ffbs}
+    % \SetAlgoLined
+    \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+
+    \Input{
+        \par
+        Distribución inicial $p(\v x_0)$
+        \par
+        Distribución de transición $p(\v x_t | \v x_{t-1})$ para $t = 1, ..., T$
+        \par
+        Verosimilitud observacional $p(\v y_t | \v x_t)$ para $t = 1, ..., T$ 
+    }
+    \Output{
+        \par
+        Distribución predictiva $p(\v x_t | \v y_{1:t-1})$ para para $t = 1, ..., T$
+        \par
+        Distribución filtrante $p(\v x_t | \v y_{1:t})$ para $t = 1, ..., T$
+        \par
+        Distribución suavizante $p(\v x_t | \v y_{1:T})$ para $t = 1, ..., T$ 
+    }
+
+    \hrulefill
+
+    \textit{Forward filter}\
+
+    \For{$t=1, ..., T$}{
+        Computar distribución predictiva:\
+        $p(\v x_t | \v y_{1:t-1}) = \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1}$\
+
+        Computar distribución filtrante:\
+        $p(\v x_t | \v y_{1:t}) \propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})$\
+    }
+
+    \textit{Backward smoother}\
+
+    \For{$t=T, ..., 1$}{
+        Computar distribución suavizante:\
+        $p(\v x_t | \v y_{1:T}) = 
+        \int \frac{p(\v x_{t+1} | \v x_t)p(\v x_t |\v y_{1:t})}
+            {p(\v x_{t+1} |\v y_{1:t})}
+            p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}$\
+    }
+    \caption{Algoritmo forward filter backward smoothing}
+\end{algorithm}
+
+
+La distribución predictiva se puede deducir integrando la ditribución de transición pesando con la distribución filtrante del paso anterior:
+\begin{align}
+    p(\v x_t | \v y_{1:t-1}) &= \int p(\v x_t, \v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Marginalización}\\
+    &= \int p(\v x_t | \v x_{t-1}, \v y_{1:t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Bayes}\\
+    &=\int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Propiedades HMM}
+\end{align}
+
+Por otro lado, para obtener la distribución filtrante podemos usar la distribución predictiva e incorporar la información de la observación $\v y_t$ de la siguiente manera:
+\begin{align}
+    p(\v x_t | \v y_{1:t}) &= \frac
+            {p(\v y_t | \v x_t \v y_{1:t-1}) p(\v x_t | \v y_{1:t-1})}
+            {p(\v y_t | \v y_{1:t-1})} && \text{Bayes}\\
+    &= \frac{p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})}
+            {p(\v y_t | \v y_{1:t-1})} && \text{Propiedades HMM}\\
+    &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})
+\end{align}
+
+Para calcular la distribución suavizante necesitamos tener las distribuciones filtrantes y predictivas del forward-pass e iterar desde la última observación hasta la primera:
+\begin{align}
+    p(\v x_t | \v y_{1:T}) &= 
+        \int p(\v x_t | \v x_{t+1}, \v y_{1:T})
+             p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
+        && \text{Marginalización} \\
+    &= \int p(\v x_t | \v x_{t+1}, \v y_{1:t})
+             p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
+        && \text{Propiedades HMM} \\
+    &= \int \frac{p(\v x_{t+1} | \v x_t, \v y_{1:t})p(\v x_t |\v y_{1:t})}
+            {p(\v x_{t+1} |\v y_{1:t})}
+            p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
+        && \text{Bayes} \\
+    &= \int \frac{p(\v x_{t+1} | \v x_t)p(\v x_t |\v y_{1:t})}
+            {p(\v x_{t+1} |\v y_{1:t})}
+            p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
+        && \text{Propiedades HMM}
+\end{align}

@@ -1,3 +1,5 @@
+\chapter{Asimilación de datos}
+
 \section{Asimilación de datos como un problema de inferencia bayesiana}
 
 La asimilación de datos busca hacer inferencia sobre variables de estado $\v x$ incorporando información observacional $\v y$. Si pensamos en la distribución de probabilidad de $\v x$, el objetivo será encontrar $p(\v x | \v y)$, la distribución \textit{a posteriori}. En este tipo de escenarios, es natural aplicar la regla de Bayes para obtener
@@ -29,7 +31,7 @@ Si no hacemos suposiciones sobre el modelo $\mathcal{M}$ es difícil saber cual 
 
 El modelo propuesto por las ecuaciones \ref{eq:transition} y \ref{eq:observation} constituye un modelo de Markov escondido. En este tipo de representaciones, se tiene que las variables de estado $\{\v x_t\}_{t \ge 0}$ son una cadena de Markov la cual no es directamente observable. A las variables $\v x_t$ se las llama variables escondidas o latentes. A su vez, la información sobre esta cadena proviene de un proceso que sí es observable $\{\v y_t\}_{t \ge 1}$. La figura \ref{dia:hmm} representa este tipo de configuración. En este esquema, buscamos inferir sobre el estado escondido utilizando la información del proceso observable. Más formalmente, las propiedades que definen a un proceso de Markov escondido son: 
 \begin{enumerate}
-    \item \textbf{El proceso $\{\v x_t\}_{t \ge 0}$ es una cadena de Markov} lo que significa que el proceso "no tiene memoria", es decir que $p(\v x_t | \v x_{0:t-1}) = p(\v x_t | \v x_{t-1})$: si el estado a tiempo $t-1$ está determinado, $x_t$ depende sólo de este y no de estados anteriores. Esto permite escribir:
+    \item \textbf{El proceso $\{\v x_t\}_{t \ge 0}$ es una cadena de Markov} lo que significa que el proceso ``no tiene memoria'', es decir que $p(\v x_t | \v x_{0:t-1}) = p(\v x_t | \v x_{t-1})$: si el estado a tiempo $t-1$ está determinado, $x_t$ depende sólo de este y no de estados anteriores. Esto permite escribir:
     \begin{align*}
         p(\v x_{0:t}) = p(\v x_0) \prod_{k=1}^{t} p(\v x_k | \v x_{k-1})
     \end{align*}
@@ -71,7 +73,7 @@ El modelo propuesto por las ecuaciones \ref{eq:transition} y \ref{eq:observation
 
 Las técnicas de asimilación de datos buscan hacer inferencia estadística en state-space models, es decir que la distribución de interés es $p(\v x | \v y)$. Sin embargo, dado que tenemos muchas realizaciones en el tiempo para $x$ e $y$, debemos ser más específicos. Habitualmente distinguimos 3 distribuciones objetivo de interés:
 \begin{itemize}
-    \item La distribución predictiva (también llamada de pronóstico o forecast) $p(\v x_t | \v y_{1:s})$ con $s < t$. Esta es la distribución de un estado "futuro" usando datos del "pasado"
+    \item La distribución predictiva (también llamada de pronóstico o forecast) $p(\v x_t | \v y_{1:s})$ con $s < t$. Esta es la distribución de un estado ``futuro'' usando datos del ``pasado''
     \item La ditribución filtrante (también llamada análisis) $p(\v x_t | \v y_{1:t})$ que informa sobre el estado actual usando observaciones pasadas y actuales
     \item La distribución suavizante $p(\v x_t | \v y_{1:s})$ con $s > t$ que puede ser interpretada como un reanálisis del estado habiendo colectado observaciones futuras al momento sobre el que se hace inferencia.
 \end{itemize}
@@ -80,96 +82,34 @@ Las técnicas de asimilación de datos buscan hacer inferencia estadística en s
 
 En modelos de Markov escondidos, bajo la suposición de que contamos con un modelo de la distribución inicial del estado $p(\v x_0)$, el modelo de transición $p(\v x_t | \v x_{t-1})$ y el modelo observacional $p(\v y_t | \v x_t)$ se puede deducir un algoritmo para obtener de manera secuencial las distribuciones suavizantes. Además, como un subproducto se obtienen las distribuciones filtrantes y las de pronóstico con un grado de separación temporal. 
 
-El algoritmo consiste de dos pases, el forward-pass en el que, de manera secuencial se incorpora
+Si consideramos una ventana de tiempo $t = 1, ..., T$ el algoritmo primero realiza el forward-pass alternando un paso de predicción, en el que obtiene $p(\v x_t | \v y_{1:t-1})$ con un paso de filtrado (también llamado análisis o update) en el que se incorpora la información de la observación a tiempo $t$ y se obtiene $p(\v x_t | \v y_{1:t})$. 
 
-Las propiedades del modelo de Markov escondido permiten deducir un método secuencial para obtener la distribución filtrante y suavizante para todo $t > 0$.
+Para $t = 1, ..., T$:
+\begin{itemize}
+    \item Predicción: $p(\v x_t | \v y_{1:t-1}) = \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1}$
+    \item Análisis: $p(\v x_t | \v y_{1:t}) \propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})$
+\end{itemize}
+Para hacer la predicción se integra utilizando el modelo de transición. La interpretación de la fórmula es que se calcula la probabilidad de $\v x_t$ dado $\v x_{t-1}$ considerando todos los valores posibles de $\v x_{t-1}$ que obedecen a la distribución filtrante del tiempo anterior. De esta manera, el paso de predicción es el encargado de propagar hacia adelante la distribución del estado. Por otro lado, para hacer el análisis se usa la regla de Bayes y se incorpora $\v y_t$ utilizando el modelo observacional, es decir se actualiza la distribución obtenida en el paso de predicción. Notemos que usamos la convención notacional $\v y_{1:0} = \emptyset$ lo que le da consistencia a las fórmulas ene caso borde de $t = 0$.
 
-Si suponemos qu tenemos la distribución filtrante en el tiempo $t-1$ podemos obtener la distribución predictiva $p(\v x_t | \v y_{t-1})$ de la siguiente manera:
-\begin{align}
-    p(\v x_t | \v y_{1:t-1}) &= \int p(\v x_t, \v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Marginalización}\\
-    &= \int p(\v x_t | \v x_{t-1}, \v y_{1:t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Bayes}\\
-    &=\int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Propiedades HMM}
-\end{align}
+Las distribuciones obtenidas en el forward-pass pueden ser utilizadas a su vez para computar las distribuciones suavizantes iterando esta vez hacia atrás, desde el último tiempo hacia el primero de la siguiente manera:
 
-Por otro lado, para obtener la distribución filtrante podemos usar la distribución predictiva e incorporar la información de la observación $\v y_t$ de la siguiente manera.
+Para $t = T-1, ..., 0$
+\begin{itemize}
+    \item Suavizado: $p(\v x_t | \v y_{1:T}) = p(\v x_t |\v y_{1:t}) \int \frac{p(\v x_{t+1} | \v x_t)}
+    {p(\v x_{t+1} |\v y_{1:t})}
+    p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}$
+\end{itemize}
+donde el caso $t = T$ ya está cubierto pues la distribución filtrante para el último tiempo coincide con la suavizante.
 
-\begin{align}
-    p(\v x_t | \v y_{1:t}) &= \frac
-            {p(\v y_t | \v x_t \v y_{1:t-1}) p(\v x_t | \v y_{1:t-1})}
-            {p(\v y_t | \v y_{1:t-1})} && \text{Bayes}\\
-    &= \frac{p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})}
-            {p(\v y_t | \v y_{1:t-1})} && \text{Propiedades HMM}\\
-    &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})
-\end{align}
+La deducción de las fórmulas para predicción, análisis y suavizado están desarrolladas en mayor detalle en el apéndice \ref{appendix:ffbs}.
 
-Para calcular la distribución suavizante hacemos:
+A pesar de dar una forma general de resolver el problema que plantea la asimilación de datos, en la práctica su aplicación no es tan directa. La integración sobre el espacio de las variables de estado es en general privativa incluso en espacios de dimensionalidad mediana. Por otro lado, hemos hecho la suposición de que contamos con la probabildad de transición $p(\v x_t | \v x_{t-1})$ y esto usualmente no es el caso. El modelo de transición $\mathcal{M}_t$ suele funcionar como una caja negra, de manera que contamos con una forma de muestrear $p(\v x_t | \v x_{t-1})$ pero no necesariamente de evaluar la función de densidad de probabilidad para calcular las integrales necesarias.
 
-\begin{align}
-    p(\v x_t | \v y_{1:T}) &= 
-        \int p(\v x_t | \v x_{t+1}, \v y_{1:T})
-             p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
-        && \text{Marginalización} \\
-    &= \int p(\v x_t | \v x_{t+1}, \v y_{1:t})
-             p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
-        && \text{Propiedades HMM} \\
-    &= \int \frac{p(\v x_{t+1} | \v x_t, \v y_{1:t})p(\v x_t |\v y_{1:t})}
-            {p(\v x_{t+1} |\v y_{1:t})}
-            p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
-        && \text{Bayes} \\
-    &= \int \frac{p(\v x_{t+1} | \v x_t)p(\v x_t |\v y_{1:t})}
-            {p(\v x_{t+1} |\v y_{1:t})}
-            p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
-        && \text{Propiedades HMM}
-\end{align}
-
-
-\begin{algorithm}[H]\label{algo:ffbs}
-    % \SetAlgoLined
-    \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
-
-    \Input{
-        \par
-        Distribución inicial $p(\v x_0)$
-        \par
-        Distribución de transición $p(\v x_t | \v x_{t-1})$ para $t = 1, ..., T$
-        \par
-        Verosimilitud observacional $p(\v y_t | \v x_t)$ para $t = 1, ..., T$ 
-    }
-    \Output{
-        \par
-        Distribución predictiva $p(\v x_t | \v y_{1:t-1})$ para para $t = 1, ..., T$
-        \par
-        Distribución filtrante $p(\v x_t | \v y_{1:t})$ para $t = 1, ..., T$
-        \par
-        Distribución suavizante $p(\v x_t | \v y_{1:T})$ para $t = 1, ..., T$ 
-    }
-
-    \hrulefill
-
-    \textit{Forward filter}\
-
-    \For{$t=1, ..., T$}{
-        Computar distribución predictiva:\
-        $p(\v x_t | \v y_{1:t-1}) = \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1}$\
-
-        Computar distribución filtrante:\
-        $p(\v x_t | \v y_{1:t}) \propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})$\
-    }
-
-    \textit{Backward smoother}\
-
-    \For{$t=T, ..., 1$}{
-        Computar distribución suavizante:\
-        $p(\v x_t | \v y_{1:T}) = 
-        \int \frac{p(\v x_{t+1} | \v x_t)p(\v x_t |\v y_{1:t})}
-            {p(\v x_{t+1} |\v y_{1:t})}
-            p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}$\
-    }
-    \caption{Algoritmo forward filter backward smoothing}
-\end{algorithm}
 
 \section{Filtro de Kalman}
-\section{Técnicas por ensmbles}
+
+
+\section{Técnicas por ensambles}
     \subsection{EnKF}
     \subsection{Colapso de ensamble}
     \subsection{Bootstrap PF}
