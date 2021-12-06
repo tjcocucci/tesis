@@ -2,6 +2,7 @@ FILENAME=main
 FIGFILES := $(wildcard *.eps)
 BIBFILES=bibliography.bib
 CHAPTERS=chapters
+APPENDICES=appendices
 
 all: $(FILENAME).bbl
 	pdflatex $(FILENAME).tex
@@ -16,7 +17,10 @@ tar:
 	tar -czvf main.tar.gz $(FIGFILES) $(FILENAME).tex
 
 clean:
-	rm -f  *.out *.blg *.log *.aux *.bbl $(CHAPTERS)/*.aux
+	rm -f *.bcf *-blx.bib *.fdb_latexmk *.fls *.run.xml *.toc *.out \
+	*.blg *.log *.aux *.bbl $(CHAPTERS)/*.aux $(APPENDICES)/*.aux
 
 clean-hard:
-	rm -f *-eps-converted-to.pdf *.out *.blg *.log *.aux *.bbl
+	rm -f *.bcf *-blx.bib *.fdb_latexmk *.fls *.run.xml *.toc \
+	*-eps-converted-to.pdf *.out *.blg *.log *.aux *.bbl $(CHAPTERS)/*.aux \
+	$(APPENDICES)/*.aux
