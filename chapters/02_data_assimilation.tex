@@ -86,8 +86,8 @@ Si consideramos una ventana de tiempo $t = 1, ..., T$ el algoritmo primero reali
 
 Para $t = 1, ..., T$:
 \begin{itemize}
-    \item Predicción: $p(\v x_t | \v y_{1:t-1}) = \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1}$
-    \item Análisis: $p(\v x_t | \v y_{1:t}) \propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})$
+    \item Predicción: $p(\v x_t | \v y_{1:t-1}) = \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1}$\label{eq:forward_pred}
+    \item Análisis: $p(\v x_t | \v y_{1:t}) \propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})$\label{eq:forward_filt}
 \end{itemize}
 Para hacer la predicción se integra utilizando el modelo de transición. La interpretación de la fórmula es que se calcula la probabilidad de $\v x_t$ dado $\v x_{t-1}$ considerando todos los valores posibles de $\v x_{t-1}$ que obedecen a la distribución filtrante del tiempo anterior. De esta manera, el paso de predicción es el encargado de propagar hacia adelante la distribución del estado. Por otro lado, para hacer el análisis se usa la regla de Bayes y se incorpora $\v y_t$ utilizando el modelo observacional, es decir se actualiza la distribución obtenida en el paso de predicción. Notemos que usamos la convención notacional $\v y_{1:0} = \emptyset$ lo que le da consistencia a las fórmulas ene caso borde de $t = 0$.
 
@@ -107,29 +107,30 @@ A pesar de dar una forma general de resolver el problema que plantea la asimilac
 
 \section{Filtro de Kalman}\label{sec:kf}
 
-El filtro de Kalman trabaja sobre una simplificación del problema dado por las escuaciones \ref{eq:transition} y \ref{eq:observation}. Se asume que el modelo de transición de las variables de estado y el modelo observacional son lineales y que las componentes estocásticas se manifiestan como errores gausianos aditivos. Esto resulta en la siguiente formulación de las ecuaciones:
+El filtro de Kalman trabaja sobre una simplificación del problema dado por las escuaciones \ref{eq:transition} y \ref{eq:observation}. Se asume que el modelo de transición de las variables de estado y el modelo observacional son lineales y que las componentes estocásticas se manifiestan como errores gausianos aditivos insesgados. Esto resulta en la siguiente reformulación de las ecuaciones:
 \begin{align}
-    \v x_t &= \mathbf{M}_t \v x_{t-1} + \gv\eta_t, \\
+    \v x_t &= \mathbf{M}_t \v x_{t-1} + \gv\eta_t, \label{eq:kf_forward}\\
     \v y_t &= \mathbf{H}_t \v x_t + \gv\nu_t.
 \end{align}
-donde $\mathbf{M}_t$ y $\mathbf{H}_t$ son operadores lineales y $\gv\eta_t$ y $\gv\nu_t$ son variables aleatorias Gaussianas con media $\v 0$ y matrices de varianzas y covarianzas $\v Q_t$ y $\v R_t$ respectivamente, es decir $\gv\eta_t \sim \mathcal{N}(\v 0, \v Q_t)$ y $\gv\nu_t \sim \mathcal{N}(\v 0, \v R_t)$.
+donde $\mathbf{M}_t$ y $\mathbf{H}_t$ son operadores lineales y $\gv\eta_t$ y $\gv\nu_t$ son variables aleatorias Gaussianas con media $\v 0$ y matrices de covarianza $\v Q_t$ y $\v R_t$ respectivamente, es decir $\gv\eta_t \sim \mathcal{N}(\v 0, \v Q_t)$ y $\gv\nu_t \sim \mathcal{N}(\v 0, \v R_t)$. Esta configuración del problema asume que tanto el error de modelo como el observacional son insesgados y quedan codificados por completo en las matrices $\v Q_t$ y $\v R_t$.
 
-Si además suponemos que la distribución inicial de $\v x_0$, entonces tanto las distribuciones, predictivas y filtrantes serán también Gaussianas. Esto es porque en el paso de predicción, la linealidad del operador de transición preserva la Gaussianidad, lo cual resulta en que en la aplicación de la regla de Bayes en el paso de análisis tengamos verosimilitud y \textit{prior} Gaussianas resultando en una distribución \textit{a posteriori} (la filtrante) también Gaussiana. En esta situación, en que las distribuciones objetivo son Gaussianas, basta con calcular las medias y las covarianzas para representarlas por completo. El filtro de Kalman produce entonces secuencias $\{\v x_t^f, \v P_t^f\}_{t=1}^{T}$ y $\{\v x_t^a, \v P_t^a\}_{t=1}^{T}$ tales que:
+Si además suponemos que la distribución inicial de $\v x_0$ es Gaussiana, entonces tanto las distribuciones, predictivas y filtrantes serán también Gaussianas. Esto es porque en el paso de predicción, la linealidad del operador de transición preserva la Gaussianidad, lo cual resulta en que en la aplicación de la regla de Bayes en el paso de análisis tengamos verosimilitud y \textit{prior} Gaussianas resultando en una distribución \textit{a posteriori} (la filtrante) también Gaussiana. Este tipo de distribución tiene la propiedad de que puede ser representadas de manera completa a través de dos parámetros: su vector de medias y su matriz de covarianza. Por lo tanto, la tarea del filtro de Kalman es producir secuencias de medias y covarainzas predictivas, $\{\v x_t^f, \v P_t^f\}_{t=1}^{T}$ y medias y covarianzas filtrantes $\{\v x_t^a, \v P_t^a\}_{t=1}^{T}$, de manera que:
 \begin{align*}
     p(\v x_t | \v y_{1:t-1}) &\sim \mathcal{N}(\v x_t^f, \v P_t^f) \\
     p(\v x_t | \v y_{1:t}) &\sim \mathcal{N}(\v x_t^a, \v P_t^a)
 \end{align*}
-Las ecuaciones que se obtienen para el pronóstico utilizando la linealidad de $\mathbf{M}_t$ son:
-\begin{align*}
-    \v x_t^f &= \mathbf{M}_t \v x_{t-1}^a \\ 
-    \v P_t^f &= \v Q_t + \v M_t \v P_{t-1}^a \v M_t^T
-\end{align*}
+
+Si incorporamos las densidades de probabilidad Gaussianas en las fórmulas de predicción \ref{eq:forward_pred} y análisis \ref{eq:forward_filt} del \textit{forward-pass} se obtienen ecuaciones cerradas para la secuencia de medias y matrices de covarianza de las distribuciones predictivas y filtrantes. Las ecuaciones que se obtienen para el pronóstico son:
+\begin{align}
+    \v x_t^f &= \mathbf{M}_t \v x_{t-1}^a \label{eq:kf_mean_pred}\\ 
+    \v P_t^f &= \v Q_t + \v M_t \v P_{t-1}^a \v M_t^T \label{eq:kf_var_pred}
+\end{align}
 mientras que para el análisis resulta:
 \begin{align*}
     \v x_t^a &= \v x_t^f + \mathbf{K}_t (\v y_t - \v H_t \v x_t^f) \\ 
     \v P_t^a &= (\v I - \v K_t \v H_t) \v P_t^f
 \end{align*}
-donde $\v K_t = \v P_t^f \v H_t(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se denomina matriz de ganancia de Kalman, mientras que el término $(\v y_t - \v H_t \v x_t^f)$ son denominadas innovaciones porque dan cuenta de la diferencia entre el pronóstico y las observación.
+donde $\v K_t = \v P_t^f \v H_t(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se denomina matriz de ganancia de Kalman, mientras que el término $(\v y_t - \v H_t \v x_t^f)$ son denominadas innovaciones porque dan cuenta de la diferencia entre el pronóstico y las observación. La deducción de estas fórmulas está desarrollada en el apéndice \ref{appendix:kf}
 
 Notemos que la media de los pronóstico es tan solo la propagación hacia adelante del la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación. 
 

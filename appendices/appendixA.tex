@@ -1,6 +1,7 @@
-\chapter{Algoritmo \textit{forward-backward}}\label{appendix:ffbs}
+\chapter{Asimilación de datos}
+\section{algoritmo \textit{forward-backward}}\label{appendix:ffbs}
 
-El algoritmo forward-backward está especificado en \ref{algo:ffbs}. 
+El algoritmo \textit{forward-backward} está especificado en \ref{algo:ffbs}. 
 
 \begin{algorithm}[H]\label{algo:ffbs}
     % \SetAlgoLined
@@ -83,3 +84,92 @@ Para calcular la distribución suavizante necesitamos tener las distribuciones f
             p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}
         && \text{Propiedades HMM}
 \end{align}
+
+\section{Filtro de Kalman}\label{appendix:kf}
+
+La fórmula \ref{eq:kf_mean_pred} para la media $\v x_t^f$ de la distribución predictiva puede ser deducida de la siguiente manera:
+
+\begin{align*}
+    \v x_t^f &= E[\v X_t | \v y_{1:t-1}] && \text{Definición de $\v x_t^f$} \\
+    &= \int \v x_t p(\v x_t | y_{1:t-1}) d\v x_t && \text{Definición de $E$} \\
+    &= \int \v x_t \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} d\v x_t && \text{Eq. \ref{eq:forward_pred}} \\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) \int \v x_t p(\v x_t | \v x_{t-1}) d\v x_t d\v x_{t-1} && \text{Intercambio de $\int$}\\ 
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v X_t | \v x_{t-1}] d\v x_{t-1} && \text{Definición de $E$}\\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v M_t \v x_{t-1} + \gv\eta_t] d\v x_{t-1} && \text{Modelo}\\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) \v M_t \v x_{t-1} d\v x_{t-1} && \text{$\v M_t$ lineal y $E[\gv\eta_t] = 0$}\\
+    &= \v M_t \int p(\v x_{t-1} | \v y_{1:t-1}) \v x_{t-1} d\v x_{t-1} && \text{Modelo} \\
+    &= \v M_t E[\v X_{t-1} | \v y_{1:t-1}] && \text{$\v M_t$ lineal}\\
+    &= \v M_t \v x_{t-1}^a && \text{Definición de $\v x_t^a$} &&
+\end{align*}
+
+Por otro lado, la fórmula \ref{eq:kf_var_pred} para la matriz de covarianza $\v P_t^f$ de la distribución predictiva puede ser deducida de la siguiente manera:
+\begin{align*}
+    \v P_t^f &= Var[\v X_t | \v y_{1:t-1}] && \text{Definición de $\v P_t^f$}\\ 
+    &= E[\v X_t \v X_t^T | \v y_{1:t-1}] - E[\v X_t | \v y_{1:t-1}] E[\v X_t | \v y_{1:t-1}]^T && \text{$Var[\v X] = E[\v X \v X^T] - E[\v X]E[\v X]^T$} \\
+    &= E[\v X_t \v X_t^T | \v y_{1:t-1}] - \v M_t \v x_{t-1}^a \v x_{t-1}^{aT} \v M_t^T && \text{Eq. \ref{eq:kf_mean_pred}}
+\end{align*}
+Ahora desarrollamos el valor esperado del primer término:
+\begin{align*}
+    E[&\v X_t \v X_t^T | \v y_{1:t-1}] = \int \v x_t \v x_t^T p(\v x_t | \v y_{1:t-1}) d\v x_t && \\
+     &= \int \v x_t \v x_t^T \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} d\v x_t && \text{Eq. \ref{eq:forward_pred}}\\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) \int \v x_t \v x_t^T p(\v x_t | \v x_{t-1}) d\v x_t d\v x_{t-1} && \text{Intercambio de $\int$}\\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v X_t \v X_t^T | \v x_{t-1}] d\v x_{t-1} && \text{Definición de $E$}\\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) (Var[\v X_t | \v x_{t-1}] && \text{$E[\v X \v X^T] = Var[\v X]^T + E[\v X]E[\v X]^T$}\\
+    &\hspace{2em} + E[\v X_t | \v x_{t-1}]E[\v X_t | \v x_{t-1}]^T) d\v x_{t-1} && \\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) Var[\v X_t | \v x_{t-1}] d \v x_{t-1} && \text{Linealidad de $\int$}\\
+    &\hspace{2em} + \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v X_t | \v x_{t-1}]E[\v X_t | \v x_{t-1}]^T) d\v x_{t-1} && \\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) \v Q_t d \v x_{t-1} && \text{Eq. \ref{eq:kf_forward}}\\
+    &\hspace{2em} + \int p(\v x_{t-1} | \v y_{1:t-1}) \v M_t \v x_{t-1} \v x_{t-1}^T \v M_t^T d\v x_{t-1} \\
+    &= \v Q_t + \v M_t \int p(\v x_{t-1} | \v y_{1:t-1}) \v x_{t-1} \v x_{t-1}^T d\v x_{t-1} \v M_t^T && \text{$\v M_t$ lineal}\\
+    &= \v Q_t + \v M_t E[\v X_{t-1} \v X_{t-1}^T | \v y_{1:t-1}] \v M_t^T && \text{Definición de $E$}\\
+    &= \v Q_t + \v M_t E[\v X_{t-1} | \v y_{1:t-1}]E[\v X_{t-1} | \v y_{1:t-1}]^T \v M_t^T && \text{$E[\v X \v X^T] = Var[\v X] + E[\v X]E[\v X]^T$} \\
+    &\hspace{2em} + \v M_t Var[\v X_{t-1} | \v y_{1:t-1}] \v M_t^T \\
+    &= \v Q_t + \v M_t \v x_{t-1}^a \v x_{t-1}^{aT} \v M_t^T + \v M_t \v P_{t-1}^a \v M_t^T && \text{Definición de $\v x_{t-1}^a$ y $\v P_{t-1}^a$}\\
+\end{align*}
+Por lo tanto al combinar las expresiones obtenemos el resultado:
+\begin{align*}
+    \v P_t^f &= \v Q_t + \v M_t \v P_{t-1}^a \v M_t^T
+\end{align*}
+
+Para obtener las fórmulas de la media y covarianza de la distribución filtrante debemos usar la ecuación de análisis del algoritmo \textit{forward-backwards}:
+
+\begin{align*}
+    p(\v x_t | \v y_{1:t}) &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) && \text{Eq. \ref{eq:forward_filt}} \\
+    &\propto \exp((\v y_t - \v H_t \v x_t)^T \v R_t^{-1} (\v y_t - \v H_t \v x_t) && \text{Densidades Gaussianas}\\ 
+    &+ (\v x_t - \v x_t^f)^T \v (\v P_t^{f})^{-1} (\v x_t - \v x_t^f)) \\
+    &\propto \exp(\v x_t^T (\v (\v P_t^f)^{-1} + \v H^T \v R_t^{-1} \v H_t) \v x_t && \text{Distribución}\\
+    &- 2 \v x_t^T (\v H^T \v R_t^{-1} \v y_t + (\v P_t^{f})^{-1} \v x_t)) \\
+    &= \exp(\v x_t^T \v A \v x_t - 2\v x_t^T \v v) && \text{Renombre}\\
+    &= \exp((\v x_t - \v A^{-1}\v v)^T \v A (\v x_t - \v A^{-1}\v v) - \v v^T \v A \v v) && \text{Completar cuadrados}\\
+    &\propto \exp((\v x_t - \v A^{-1}\v v)^T \v A (\v x_t - \v A^{-1}\v v))
+\end{align*}
+donde hemos utilizado la siguiente nomenclatura:
+\begin{align*}
+    \v A &= \v (\v P_t^f)^{-1} + \v H^T \v R_t^{-1} \v H_t \\
+    \v v &= \v H^T \v R_t^{-1} \v y_t + (\v P_t^{f})^{-1} \v x_t
+\end{align*}.
+
+La expresión qye obtuvimos implica que la distribución filtrante es Gaussiana con media $\v A^{-1}\v v$ y covarianza $\v A^{-1}$. Vamos a desarrollar estas expresiones para obtener la formulación clásica del filtro de Kalman. Para ello, necesitaremos usar la siguiente identidad matricial de Woodbury \cite{Golub1996}:
+\begin{align*}
+    (\v A + \v C \v B \v C^T)^{-1} = \v A^{-1} - \v A^{-1} \v C (\v B^{-1} + \v C^T \v A^{-1} \v C)^{-1} \v C^T \v A^{-1}
+\end{align*}
+
+Tenemos entonces que:
+\begin{align*}
+    \v P_t^a &= \v A^{-1} && \\
+    &= ((\v P_t^f)^{-1} + \v H^T \v R_t^{-1} \v H_t)^{-1} && \\
+    &= \v P_t^f - \v P_t^f \v H_t^T (\v R_t + \v H \v P_t^f \v H^T)^{-1} \v H_t \v P_t^f && \text{Identidad de Woodbury}\\
+    &= \v P_t^f - \v K_t \v H_t \v P_t^f && \\
+    &= (\v I - \v K_t \v H_t) \v P_t^f && \\
+\end{align*}
+donde hemos definido a $\v K_t = \v P_t^f \v H_t^T (\v R_t + \v H \v P_t^f \v H^T)^{-1}$. Esta matriz es denominada matriz de ganancia de Kalman. Para desarrollar la expresión de la media de la distribución además usaremos la notación $\v S_t = (\v R_t + \v H \v P_t^f \v H^T)^{-1}$, con la cual la ganancia de Kalman se puede expresar como $\v K_t = \v P_t^f \v H_t^T \v S_t$ y podemos obtener la fórmula para $\v x_t^a$ de la siguiente manera:
+\begin{align*}
+    \v x_t^a &= \v A^{-1} \v v && \\
+    &= (\v I - \v K_t \v H_t) (\v P_t^f \v H^T \v R_t^{-1} \v y_t + (\v P_t^{f})^{-1} \v x_t) && \\
+    &= \v x_t - \v K_t \v H_t \v x_t + \v P_t \v H_t^T \v R_t^{-1} \v y_t - \v K_t \v H_t \v P_t \v H_t^T \v R_t^{-1} \v y_t && \\
+    &= \v x_t - \v K_t \v H_t \v x_t + \v P_t \v H_t^T \v R_t^{-1} \v y_t - \v K_t \v H_t \v P_t \v H_t^T \v R_t^{-1} \v y_t && \\
+    &= \v x_t - \v K_t \v H_t \v x_t + \v P_t \v H_t^T \v S_t \v S_t^{-1} \v R_t^{-1} \v y_t - \v K_t \v H_t \v P_t \v H_t^T \v R_t^{-1} \v y_t && \\
+    &= \v x_t - \v K_t \v H_t \v x_t + \v K_t (\v R_t + \v H \v P_t^f \v H^T)^{-1} \v R_t^{-1} \v y_t - \v K_t \v H_t \v P_t \v H_t^T \v R_t^{-1} \v y_t && \\
+    &= \v x_t - \v K_t \v H_t \v x_t + \v K_t \v y_t && \\
+    &= \v x_t + \v K_t (\v y_t - \v H_t \v x_t) && \\
+\end{align*}
