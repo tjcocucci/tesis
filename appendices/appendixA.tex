@@ -149,7 +149,7 @@ donde hemos utilizado la siguiente nomenclatura:
     \v v &= \v H^T \v R_t^{-1} \v y_t + (\v P_t^{f})^{-1} \v x_t
 \end{align*}.
 
-La expresión qye obtuvimos implica que la distribución filtrante es Gaussiana con media $\v A^{-1}\v v$ y covarianza $\v A^{-1}$. Vamos a desarrollar estas expresiones para obtener la formulación clásica del filtro de Kalman. Para ello, necesitaremos usar la siguiente identidad matricial de Woodbury \cite{Golub1996}:
+La expresión qye obtuvimos implica que la distribución filtrante es Gaussiana con media $\v A^{-1}\v v$ y covarianza $\v A^{-1}$. Vamos a desarrollar estas expresiones para obtener la formulación clásica del filtro de Kalman. Para ello, necesitaremos usar la siguiente identidad matricial de Woodbury \citep{Golub1996}:
 \begin{align*}
     (\v A + \v C \v B \v C^T)^{-1} = \v A^{-1} - \v A^{-1} \v C (\v B^{-1} + \v C^T \v A^{-1} \v C)^{-1} \v C^T \v A^{-1}
 \end{align*}
