@@ -102,7 +102,7 @@ La fórmula \ref{eq:kf_mean_pred} para la media $\v x_t^f$ de la distribución p
     &= \v M_t \v x_{t-1}^a && \text{Definición de $\v x_t^a$} &&
 \end{align*}
 
-Por otro lado, la fórmula \ref{eq:kf_var_pred} para la matriz de covarianza $\v P_t^f$ de la distribución predictiva puede ser deducida de la siguiente manera:
+Por otro lado, la fórmula \ref{eq:kf_var_pred} para la matriz de covarianza $\v P_t^f$ de la distribución predictiva puede ser obtenida como se detalla a continuación:
 \begin{align*}
     \v P_t^f &= Var[\v X_t | \v y_{1:t-1}] && \text{Definición de $\v P_t^f$}\\ 
     &= E[\v X_t \v X_t^T | \v y_{1:t-1}] - E[\v X_t | \v y_{1:t-1}] E[\v X_t | \v y_{1:t-1}]^T && \text{$Var[\v X] = E[\v X \v X^T] - E[\v X]E[\v X]^T$} \\
@@ -132,7 +132,6 @@ Por lo tanto al combinar las expresiones obtenemos el resultado:
 \end{align*}
 
 Para obtener las fórmulas de la media y covarianza de la distribución filtrante debemos usar la ecuación de análisis del algoritmo \textit{forward-backwards}:
-
 \begin{align*}
     p(\v x_t | \v y_{1:t}) &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) && \text{Eq. \ref{eq:forward_filt}} \\
     &\propto \exp((\v y_t - \v H_t \v x_t)^T \v R_t^{-1} (\v y_t - \v H_t \v x_t) && \text{Densidades Gaussianas}\\ 

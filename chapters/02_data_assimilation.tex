@@ -25,7 +25,9 @@ Notemos además que la ecuación \ref{eq:transition} determina una probabilidad 
 \end{align}
 
 Si no hacemos suposiciones sobre el modelo $\mathcal{M}$ es difícil saber cual será el efecto de la propagación hacia adelante, incluso si la distribución inicial de $\v x_0$ es sencilla. Modelos no lineales de baja dimensionalidad pueden llevar a que una distribución inicial gaussiana resulte multimodal al ser evolucionada hacia adelante. 
-[[posible grafica de lorenz63]]
+
+\paragraph{Ejemplo Lorenz 63}
+% TODO
 
 \subsection{Modelo de Markov escondido}
 
@@ -132,15 +134,18 @@ mientras que para el análisis resulta:
 \end{align*}
 donde $\v K_t = \v P_t^f \v H_t(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se denomina matriz de ganancia de Kalman, mientras que el término $(\v y_t - \v H_t \v x_t^f)$ son denominadas innovaciones porque dan cuenta de la diferencia entre el pronóstico y las observación. La deducción de estas fórmulas está desarrollada en el apéndice \ref{appendix:kf}
 
-Notemos que la media de los pronóstico es tan solo la propagación hacia adelante del la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación. 
+Notemos que la media de los pronósticos es tan solo la propagación hacia adelante de la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación. 
+
+\paragraph{Ejemplo unidimensional}
+% TODO
+
+\section{3DVar?}
 
 \section{Técnicas por ensambles}
+El filtro de Kalman constituye una técnica robusta que da una solución exacta en el caso de modelos lineales con errores Gaussianos aditivos. Para ciertos modelos es posible considerar linealizaciónes de los operadores $\mathcal{M}_t$ y $\mathcal{H}_t$ y aplicar el filtro de Kalman tradicional con estas aproximaciones. Este método se denomina filtro de Kalman extendido y también producirá estimaciones de las medias y covarianzas predictivas y filtrantes. 
+
+\subsection{Bootstrap PF}
     \subsection{EnKF}
     \subsection{Colapso de ensamble}
-    \subsection{Bootstrap PF}
     \subsection{VMPF}
 \section{Estado aumentado}
-\section{Error observacional y de modelo}
-    \subsection{Batch EM}
-    \subsection{Online EM}
-    \subsection{Leaky gradient}
