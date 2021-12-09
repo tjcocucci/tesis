@@ -146,7 +146,26 @@ El filtro de Kalman constituye una técnica robusta que da una solución exacta 
 
 \subsection{Monte Carlo secuencial}
 
-Los filtros de partículas son también conocidos como métodos de Monte Carlo secuencial ya que utilizan el esquema secuencial de dos pasos de predicción-análisis descrito por las ecuaciones \ref{eq:forward_pred} y \ref{eq:forward_filt}.
+Los filtros de partículas son también conocidos como métodos de Monte Carlo secuencial ya que utilizan el esquema secuencial de dos pasos de predicción-análisis descrito por las ecuaciones \ref{eq:forward_pred} y \ref{eq:forward_filt}. De hecho, el enfoque de estos métodos es el de resolver las integrales de estas ecuaciones, no de manera explícita sino utlizando las aproximaciones empíricas de las distribuciones implicadas. Si tenemos una función de densidad de probabilidades $p$ y una conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ muestreadas de manera independiente con esta probabilidad, i.e. $\v x^{(i)}\sim p$, entonces la aproximación empírica de $p$ basada en esta muestra es:
+\begin{align*}
+    p(\v x) \approx \frac{1}{N}\sum_{i=1}^N \delta(\v x^{(i)}, \v x)
+\end{align*}
+donde $\delta(\v a, \v x)$ es la delta de Dirac que acumula toda la probabilidad en el punto $\v a$ siendo nula en todo otro punto. Esta aproximación está sustentada en la ley de los grandes números, dado que se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas.
+\begin{align*}
+    \frac{1}{N}\sum_{i=1}^N \v f(x^{(i)}) \xrightarrow{c. s.} \int f(\v x) p(\v x) d \v x
+\end{align*}
+
+Existe una generalización de la aproximación de Monte Carlo denominada muestreo de importancia. A pesar de su nombre es un método para aproximar integrales. Cuando no es posible muestrear de $p$ se puede entonces muestrear otra distribución con densidad $q$ que actúe de proxy de $p$. En principio la única condición para $q$ es que su soporte contenga al de $p$. Este método también admite que no se pueda evaluar exactamente $p$ y $q$ sino que sólo podamos evaluar versiones no normalizadas $\tilde{p}$ y $\tilde{q}$ de estas densidades. Entonces, si tenemos un conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ tales que $\v x^{(i)}\sim q$, podemos hacer la aproximación dada por las siguientes fórmulas:
+\begin{align*}
+    \int f(\v x) p(\v x) d \v x &\approx \sum_{i=1}^N w_i f(\v x^{(i)}) \\
+    w_i &= \frac{\tilde{w}_i}{\sum_{i=1}^N \tilde{w}_i} \\
+    \tilde{w}_i &= \frac{\tilde{p}(\v x_i)}{\tilde{q}(\v x_i)}
+\end{align*}
+donde $w_i$ son denominados pesos de importancia y $\tilde{w}_i$ son sus versiónes no normalizadas.
+
+Los métodos de Monte Carlo secuencial producen conjuntos de partículas que aproximan a la distribución predictiva y filtrante respectivamente. Estas partícuas además pueden ser ponderadas, es decir pueden traer pesos asociados. Concretamente, para cada tiempo $t$ se obtienen $\{\v x_t^{(i), f}, w_t^{(i), f}\}_{i=1}^{N_p}$ y $\{\v x_t^{(i), f}, w_t^{(i), f}\}_{i=1}^{N_p}$ tales que sean aproximaciones empíricas de $p(\v x_t | \v y_{1:t-1})$ y $p(\v x_t | \v y_{1:t})$ resprectivamente.
+
+Suponiendo que contamos con una muestra inicial de $p(\v x_0)$
 
 \subsection{EnKF}
     \subsection{Colapso de ensamble}
