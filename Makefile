@@ -7,7 +7,7 @@ APPENDICES=appendices
 all: $(FILENAME).bbl
 	pdflatex $(FILENAME).tex
 
-$(FILENAME).bbl:
+$(FILENAME).bbl: $(BIBFILES)
 	pdflatex $(FILENAME).tex
 	biber $(FILENAME)
 	pdflatex $(FILENAME).tex
