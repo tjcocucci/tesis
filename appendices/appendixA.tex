@@ -172,3 +172,32 @@ donde hemos definido a $\v K_t = \v P_t^f \v H_t^T (\v R_t + \v H \v P_t^f \v H^
     &= \v x_t - \v K_t \v H_t \v x_t + \v K_t \v y_t && \\
     &= \v x_t + \v K_t (\v y_t - \v H_t \v x_t) && \\
 \end{align*}
+
+\section{Filtro de partículas}\label{appendix:pf}
+
+Hacemos aquí una deducción de el filtro de partículas SIR. El objetivo es obtener representaciones de partículas $\{\v x_t^{(i)}, w_t^{(i)}\}_{i=1}^{N}$ tal que sea una aproximación empírica de $p(\v x_t | \v y_{1:t})$. Vamos a comenzar por considerar la distribución conjunta de las variables de estado condicionadas a las observaciones, $p(\v x_{0:t} | \v y_{1:t})$. Estamos considerando a las variables de estado desde el tiempo $0$ hasta el $t$, lo cual significa que esta es la densidad de probablidad de una trayectoria de las variables de estado en el tiempo. Claramente, si tenemos una muestra de esta distribución, las componentes correspondientes al tiempo $t$ constituirán una muestra de la probabilidad filtrante marginalizada $p(\v x_t | \v y_{1:t})$. Utilizando las propiedades Markovianas y la independencia condicional de las observaciones del modelo de Markov escondido podemos escribir:
+\begin{align*}
+    p(\v x_{0:t} | \v y_{1:t}) \propto p(\v x_{0:t-1} | \v y_{1:t}) p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)
+\end{align*}
+
+Si muestreamos trayectorias $\{\v x_{0:t}^{(i)}\}_{i=1}^N$ de una probabilidad propuesta $q$ vamos a obtener que los pesos de importancia son 
+\begin{align}\label{eq:importance_weights_general}
+    w_t^{(i)} \propto \frac{p(\v x_{0:t-1} | \v y_{1:t}) p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)}{q(\v x_{0:t})}
+\end{align}
+
+Adicionalmente consideraremos que $q$ cumple 
+\begin{align}\label{eq:proposal_factor}
+    q(\v x_{0:t} | \v y_{1:t}) = q(\v x_t | \v x_{0:t-1}, \v y_{1:t}) q(\v x_{0:t-1} | \v y_{1:t-1})
+\end{align}
+Esta factorización implica que si tenemos una muestra de la trayectoria $\v x_{0:t-1}^{(i)} \sim q(\v x_{0:t-1} | \v y_{1:t-1})$ entonces se puede obtener una muestra de la trayectoria hasta el tiempo $t$ incorporando la última componente muestreada como $\v x_t^{(i)} \sim q(\v x_t | \v x_{0:t-1}, \v y_{1:t})$.
+
+Si entonces introducimos \ref{eq:proposal_factor} en \ref{eq:importance_weights_general}, tenemos que los pesos de importancia pueden ser computados como:
+\begin{align*}
+    w_t^{(i)} &\propto \frac{p(\v x_{0:t-1} | \v y_{1:t}) p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)}{q(\v x_{0:t-1} | \v y_{1:t-1}) q(\v x_t | \v x_{0:t-1},  \v y_{1:t})} \\
+    &\propto w_{t-1}^{(i)} \frac{p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)}{q(\v x_t | \v x_{0:t-1},  \v y_{1:t})}
+\end{align*}
+
+Si adicionalmente dotamos a $q$ de ``Markovianidad'' en el sentido que $q(\v x_t | \v x_{0:t-1} \v y_{1:t}) = q(\v x_t | \v x_{t-1} \v y_t)$, entonces los pesos solamente dependen de $\v x_t$ y no de toda la trayectoria $\v x_{0:t-1}$. De esta manera se puede hacer filtrado de manera secuencial. Con estas suposiciones obtenemos la forma general de los pesos de el filtro de partículas SIR:
+\begin{align*}
+    w_t^{(i)} &\propto w_{t-1}^{(i)} \frac{p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)}{q(\v x_t | \v x_{t-1}, \v y_t)}
+\end{align*}

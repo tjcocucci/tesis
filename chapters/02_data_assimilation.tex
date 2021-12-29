@@ -179,66 +179,69 @@ Los filtros de partículas obtienen estas muestras en dos pasos básicos: primer
 
 Esta implementación es habitualmente llamada SIS (\textit{sequential importance sampling}) y en la práctica tiene el problema de que los pesos suelen concentrarse en una sola partícula, es decir uno de los pesos es prácticamente $1$ mientras que el resto es prácticamente $0$. Este efecto se denomina degeneración del filtro y es indeseable pues la representación muestral de la distribución filtrante pierde expresividad. Además de aumentar el número de partículas existen varias estrategias para mitigar este efecto, la más conocida de ellas es el remuestreo. Este método consiste en muestrar con reemplazo las partículas de la ditribución empirica dada por los pesos. Es decir, una vez computados los pesos se obtiene un nuevo conjunto de partículas con pesos uniformes:
 \begin{align*}
-    \hat{\v x}_t^{(i)} &\sim \sum_{i=1}^N w_i f(\v x^{(i)}) \\
+    \hat{\v x}_t^{(i)} &\sim \sum_{i=1}^N w_i \delta_{\v x^{(i)}} \\
     \hat{w_i} &= 1 / N
 \end{align*}
 
-Esto tiene el efecto que las partículas con mayor peso estarán repetidas y las de menos peso serán eliminadas. A pesar de mitigar la degeneración del filtro causa el problema de empobrecimiento de diversidad del que hablaremos más adelante. No es necesario hacer remuestreo de partículas en cada paso de tiempo y un criterio común para decidir si se hace o no es verificar si el número efectivo de partículas $N_{eff}$ está por debajo de un valor umbral. El número efectivo de partículas se puede estimar de la siguiente manera [[CITA]]:
+Esto tiene el efecto que las partículas con mayor peso estarán repetidas y las de menos peso serán eliminadas. A pesar de mitigar la degeneración del filtro causa el problema de empobrecimiento de diversidad del que hablaremos más adelante. No es necesario hacer remuestreo de partículas en cada paso de tiempo y un criterio común para decidir si se hace o no es verificar si el número efectivo de partículas $N_{eff}$ está por debajo de un valor umbral $N_T$. El número efectivo de partículas se puede estimar de la siguiente manera \cite{Arulampalam2002}:
 \begin{align*}
-    N_{eff} \approx \frac{1}{\sum_{i=1}^N (w_i)^2}
+    N_{eff} \approx \frac{1}{\sum_{i=1}^N (w_i)^2} \dot{=} \widehat{N_{eff}}
 \end{align*}
 Este filtro de partículas que incorpora remuestreo suele ser denominado SIR (\textit{sequential importance resampling}) y lo expresamos en forma algortítmica en \ref{algo:sir_pf}.
 
-\begin{algorithm}[H]\label{algo:sir_pf}
-    % \SetAlgoLined
-    \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
 
-    \Input{
+% TODO: Resolver asignación en algoritmos. Usar := y :~ ?
+% TODO: Resolver delta Dirac \delta(x-y) o \delta_y(x)
+\begin{algorithm}[H]\label{algo:sir_pf}    
+    Muestrear partículas iniciales: $\{\v x_0^{(i)}\}_{i=1}^{N_p} \sim p(\v x_0)$
+    
+    \For{$t=1, ..., T$}{
+        Muestrear partículas de la distribución propuesta: \
+        
+        \hspace{20pt} $\widehat{\v x}_{t}^{(i)} \sim q(\v x_t | \v x_{t-1}^{(i)}, \v y_t)$ \
+        
+        Actualizar y normalizar pesos: \
+        
+        \hspace{20pt} $w_{t}^{(i)} \propto w_{t-1}^{(i)} \frac{p(\v y_t | \widehat{\v x}_t^{(i)}) p(\widehat{\v x}_t^{(i)} | \v x_{t-1}^{(i)})}{q(\widehat{\v x}_t^{(i)} | \v x_{t-1}^{(i)}, \v y_t)}$ \
+
+        Aproximar el número efectivo de partículas: \
+        
+        \hspace{20pt} $\widehat{N_{eff}} = \frac{1}{\sum_{i=1}^{N_p} (w_i)^2}$ \
+
+        \If{$\widehat{N_{eff}} < N_T$} {
+            \begin{flalign*}
+                \v x_t^{(i)} &\sim \sum_{i=1}^{N_p} w_i \delta_{\widehat{\v x}_t^{(i)}} & \\
+                w_{t}^{(i)} &= 1 / N_p &
+            \end{flalign*}            
+        }
     }
-    \Output{
-    }
-    \hrulefill
-    }
-    \caption{Filtro de partículas bootstrap}
+\caption{Filtro de partículas SIR}
 \end{algorithm}
-
 
 Una de las implementaciones más sencillas de este tipo de filtro es el llamado \textit{bootstrap} y consiste en tomar la distribución propuesta como la probabilidad de transición, i.e., $q(\v x_t | \v x_{t-1}, \v y_t) = p(\v x_t | \v x_{t-1})$. Esto significa que el muestreo de partículas es simpemente aplicar el modelo de transición a todas las partículas del tiempo anterior. Además, las implementaciones más comunes del filtro \textit{bootstrap} hacen remuestreo en cada paso de tiempo. Esto significa que los pesos son sólo calculados para hacer remuestreo pero las partículas que representan a la distribución filtrante tienen pesos uniformes y no hay que almacenarlos. Además esto simplifica el cómputo de los pesos a la expresión $w_{t}^{(i)} \propto p(\v y_t | \v x_t^{(i)})$. En \ref{algo:bootstrap_pf} especificamos este método.
 
 \begin{algorithm}[H]\label{algo:bootstrap_pf}
-    % \SetAlgoLined
-    \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
-
-    \Input{
-    }
-    \Output{
-    }
-    \hrulefill
-    }
-    \caption{Filtro de partículas bootstrap}
+    Muestrear partículas iniciales: $\{\v x_0^{a, (i)}\}_{i=1}^{N_p} \sim p(\v x_0)$
+    
+    \For{$t=1, ..., T$}{
+        Evolucionar partículas: \
+        
+        \hspace{20pt} $\v x_{t}^{f, (i)} \sim p(\v x_t | \v x_{t-1}^{a, (i)})$  para $i = 1, ..., N_p$ \
+        
+        Actualizar y normalizar pesos: \
+        
+        \hspace{20pt} $w^{(i)} \propto p(\v y_t | \v x_t^{f, (i)})$ \
+        
+        Remuestrear: \
+        
+        \hspace{20pt} $\v x_t^{a, (i)} \sim \sum_{i=1}^{N_p} w_i \delta_{\v x^{f, (i)}}$
+        }
+\caption{Filtro de partículas bootstrap}
 \end{algorithm}
 
-[[interpretacion como seleccion natural]]
+La elección de la distribución de transición como distribución propuesta en el filtro de partículas \textit{bootstrap} significa que el muestreo de partículas no es más que evolucionar cada partícula del tiempo anterior utilizando el modelo. Las partículas muestradas constituyen entonces un pronóstico, por lo cual están indicadas on el supraíndice $f$ en \ref{algo:bootstrap_pf}. Esta interpretación no es generalizable al filtro SIR general. El cómputo de los pesos está dado por la verosimilitud observacional por lo que estos cuantifican cuán afin es cada partícula a la observación. Por su parte, la forma de transformar al conjunto de partículas de pronóstico en una muestra filtrante es a través de el remuestreo. El remuestreo, al ser con reemplazo, tiene el efecto de multiplicar las partículas con pesos altos (cercanas a la observación) y eliminar las partículas con pesos bajos (lejanas a la observación). Este mecanismo se suele comparar con la selección natural, solo sobreviven y se reproducen las partículas ``más aptas''.
 
-
-
-
-Para obtener estos conjuntos de partículas vamos a comenzar por considerar la distribución conjunta de las variables de estado condicionadas a las observaciones, $p(\v x_{0:t} | \v y_{1:t})$. Estamos considerando a las variables de estado desde el tiempo $0$ hasta el $t$, lo cual significa que esta es la densidad de probablidad de una trayectoria de las variables de estado en el tiempo. Claramente, si tenemos una muestra de esta distribución, las componentes correspondientes al tiempo $t$ constituirán una muestra de la probabilidad filtrante marginalizada $p(\v x_{0:t} | \v y_{1:t})$. Utilizando las propiedades Markovianas y la independencia condicional de las observaciones del modelo de Markov escondido podemos escribir:
-\begin{align*}
-    p(\v x_{0:t} | \v y_{1:t}) \propto p(\v x_{0:t-1} | \v y_{1:t}) p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)
-\end{align*}
-
-Si muestreamos trayectorias $\{\v x_{0:t}^{(i)}\}_{i=1}^N$ de una probabilidad propuesta $\pi$ que cumpla que 
-\begin{align*}
-    \pi(\v x_{0:t} | \v y_{1:t}) = \pi(\v x_t | \v x_{0:t-1} \v y_{1:t}) \pi(\v x_{0:t-1} | \v y_{1:t-1})
-\end{align*}
-entonces podemos calcular los pesos de el muestreo de importancia como 
-\begin{align*}
-    w^{(i)} \propto \frac{p(\v x_{0:t-1}^{(i)} | \v y_{1:t}) p(\v x_t^{(i)} | \v x_{t-1}^{(i)}) p(\v y_t | \v x_t^{(i)})}
-    {\pi(\v x_{0:t} | \v y_{1:t})}
-\end{align*}
-
-
+Como se anticipó, el remuestreo introduce otro problema: el empobrecimiento de diversidad. Esto se debe a que tendremos muchas réplicas de las partículas con más peso, es decir una muestra que cubre pbremente el espacio muestral. Este efecto es claramente indeseable y para paliarlo es habitual introducir, luego del remuestreo, un paso en el que las partículas se mutan o se mueven de alguna forma para no tener tantas partículas repetidas. El término mutación proviene de la interpretación del fitro de partículas \textit{bootstrap} como un mecanismo de selección del más apto. Esta modificación de las partículas se puede hacer incorporando pasos de MCMC. También es posible mitigar el problema mediante regularización, utilizando \textit{Kernel density estimation} sobre las distribuciones empíricas \citep{Sarkka2013, Arulampalam2002, Ruchi2019}.
 
 \subsection{EnKF}
     \subsection{Colapso de ensamble}
