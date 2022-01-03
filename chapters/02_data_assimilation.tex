@@ -112,7 +112,7 @@ A pesar de dar una forma general de resolver el problema que plantea la asimilac
 El filtro de Kalman trabaja sobre una simplificación del problema dado por las escuaciones \ref{eq:transition} y \ref{eq:observation}. Se asume que el modelo de transición de las variables de estado y el modelo observacional son lineales y que las componentes estocásticas se manifiestan como errores gausianos aditivos insesgados. Esto resulta en la siguiente reformulación de las ecuaciones:
 \begin{align}
     \v x_t &= \mathbf{M}_t \v x_{t-1} + \gv\eta_t, \label{eq:kf_forward}\\
-    \v y_t &= \mathbf{H}_t \v x_t + \gv\nu_t.
+    \v y_t &= \mathbf{H}_t \v x_t + \gv\nu_t. \label{eq:kf_observational}
 \end{align}
 donde $\mathbf{M}_t$ y $\mathbf{H}_t$ son operadores lineales y $\gv\eta_t$ y $\gv\nu_t$ son variables aleatorias Gaussianas con media $\v 0$ y matrices de covarianza $\v Q_t$ y $\v R_t$ respectivamente, es decir $\gv\eta_t \sim \mathcal{N}(\v 0, \v Q_t)$ y $\gv\nu_t \sim \mathcal{N}(\v 0, \v R_t)$. Esta configuración del problema asume que tanto el error de modelo como el observacional son insesgados y quedan codificados por completo en las matrices $\v Q_t$ y $\v R_t$.
 
@@ -128,10 +128,10 @@ Si incorporamos las densidades de probabilidad Gaussianas en las fórmulas de pr
     \v P_t^f &= \v Q_t + \v M_t \v P_{t-1}^a \v M_t^T \label{eq:kf_var_pred}
 \end{align}
 mientras que para el análisis resulta:
-\begin{align*}
-    \v x_t^a &= \v x_t^f + \mathbf{K}_t (\v y_t - \v H_t \v x_t^f) \\ 
-    \v P_t^a &= (\v I - \v K_t \v H_t) \v P_t^f
-\end{align*}
+\begin{align}
+    \v x_t^a &= \v x_t^f + \mathbf{K}_t (\v y_t - \v H_t \v x_t^f) \label{eq:kf_mean_filter} \\ 
+    \v P_t^a &= (\v I - \v K_t \v H_t) \v P_t^f \label{eq:kf_var_filter}
+\end{align}
 donde $\v K_t = \v P_t^f \v H_t(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se denomina matriz de ganancia de Kalman, mientras que el término $(\v y_t - \v H_t \v x_t^f)$ son denominadas innovaciones porque dan cuenta de la diferencia entre el pronóstico y las observación. La deducción de estas fórmulas está desarrollada en el apéndice \ref{appendix:kf}
 
 Notemos que la media de los pronósticos es tan solo la propagación hacia adelante de la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación. 
@@ -247,10 +247,55 @@ Como se anticipó, el remuestreo introduce otro problema: el empobrecimiento de 
 % TODO: introducir sin mucho detalle filtros de flujo de langevin y VMPF
 
 % TODO: mejorar este párrafo de ventajas y desventajas de PFs en general
-El filtro de partículas SIR tiene la ventaja de hacer pocos requisitos sobre el modelo. En el caso particular del filtro \textit{bootstrap} sólo se necesita evaluar la verosimilitud observacional y muestrear de la probabilidad de transición. Obtener muestra de la probabilidad de transición no es otra cosa que evolucionar el modelo, y este requisito por sí solo significa que el modelo puede ser tratado como una caja negra, una característica deseable en muchas situaciones. Como no hay ninguna suposición sobre las distribuciones, estos métodos pueden ser utilizados en escenarios de no-Gaussianidad y no-linealidad. Por otro lado, este tipo de filtros habitualmente necesitan muchas partículas para tener una buena performance y además padecen de los problemas ya mencionados de degeneración del fitro y empobrecimiento de la diversidad. También es común que muchos pesos sean muy pequeños, lo cual puede causar problemas numéricos. 
+El filtro de partículas SIR tiene la ventaja de hacer pocos requisitos sobre el modelo. En el caso particular del filtro \textit{bootstrap} sólo se necesita evaluar la verosimilitud observacional y muestrear de la probabilidad de transición. Obtener muestra de la probabilidad de transición no es otra cosa que evolucionar el modelo, y este requisito por sí solo significa que el modelo puede ser tratado como una caja negra, una característica deseable en muchas situaciones. Como no hay ninguna suposición sobre las distribuciones, estos métodos pueden ser utilizados en escenarios de no-Gaussianidad y no-linealidad. Por otro lado, este tipo de filtros habitualmente necesitan muchas partículas para tener una buena performance y además padecen de los problemas ya mencionados de degeneración del fitro y empobrecimiento de la diversidad. También es común que muchos pesos sean muy pequeños, lo cual puede causar problemas numéricos. Estos problemas se acentúan en espacios de alta dimensionalidad por lo que en estas situaciones es habitual utilizar filtros de Kalman por ensambles, los cuales introducimos en la siguiente sección.
 
 \subsection{EnKF}
 
-\subsection{Colapso de ensamble}
-    \subsection{VMPF}
+Los filtros de Kalman por ensambles utilizan muestras para mantener estimaciones de las distribuciones objetivo pero incorporan las fórmulas del filtro de Kalman tradicional para actualizar las partículas (en el contexto del EnKF las partículas suelen ser llamadas miembros del ensamble pero utilizaremos las terminologías de manera intercambiable). Para esto es necesario suponer linealidad sobre el modelo de transición y observacional y también errores aditivos Gaussianos: es decir que trabaja sobre el modelo definido por \ref{eq:kf_forward} y \ref{eq:kf_observational}. En realidad, la suposición de que el modelo de transición es lineal puede ser algo relajada en la práctica pero discutiremos esto más adelante.
+
+Supongamos que a tiempo $t-1$ contamos con un ensamble $\{ \v x_{t-1}^{a, (i)} \}_{i=1}^{N_p}$ que representa al análisis. Por las suposiciones que hemos hecho esta muestra será Gaussiana y al aplicar el modelo transicional sobre cada uno de estos miembros del ensamble podemos obtener un ensamble $\{ \v x_{t}^{f, (i)} \}_{i=1}^{N_p}$ del pronóstico a tiempo $t$ el cual constutuirá una muestra Gaussiana. La pregunta entonces, es cómo obtener a partir de este ensamble otro que represente al análisis. La idea de el EnKF es aplicar la ecuación de actualización de la media del filtro de Kalman tradicional \ref{eq:kf_mean_filter} para cada partícula del pronóstico. Esta es la esencia de los EnKF pero para aplicar el concepto correctamente debemos hacer algunas salvedades.
+
+Para aplicar la actualización del filtro de Kalman ecesitamos computar $\v K_t$ la cual por su parte necesita de la matriz de covarianzas del pronóstico $\v P_t^f$. Sin embargo, a diferencia del filtro de Kalman, aquí no propagamos las matrices de covarianzas en el tiempo, sólo una muestra de la distribución y por ello no disponemos de una representación exacta de esta. De cualquier manera, es natural aproximar $\v P_t^f$ con la matriz de covarianza muestral del ensamble del pronóstico, $\widehat{\v P}_t^f$ para obtener una aproximación $\widehat{\v K}_t$ de la matriz de ganancia de Kalman.
+
+Por otro lado, hay que notar que estamos utilizando sobre cada partícula la fórmula de actualización de la media de la distribución, y cada partícula está siendo actualizada en base a la misma observación. Es posible demostrar que si hacemos esto, la covarianza del ensamble del análisis va a estar subestimada. La solución a este problema consiste en actualizar cada partícula usando una perturbación de la observación original. Para obtener el miembro del ensamble $\v x_t^{a, (i)}$ utilizaremos la observación modificada $\v y_t^{(i)} = \v y_t + \v v_t^{(i)}$ con $\v v_t{(i)} \sim \mathcal{N}(\v 0, \v R_t)$. El origen de este problema y su solución son planteados en \cite{Burgers1998}. El método resultante es denominado EnKF estocástico o EnKF con observaciones perturbadas y en \ref{algo:enkf_pert_obs} está descrito de manera algorítmica.
+
+\begin{algorithm}[H]\label{algo:enkf_pert_obs}
+    Muestrear ensamble inicial: $\{\v x_0^{a, (i)} \}_{i=1}^{N_p} \sim p(\v x_0)$
+    
+    \For{$t=1, ..., T$}{
+        \For{$i=1, ..., N_p$} {
+            $\gv\eta^{(i)} \sim \mathcal{N}(\v 0, \v Q_t)$ \
+
+            $\v x_t^{f, (i)} = \mathcal{M}_t (\v x_{t-1}^{a, (i)}) + \gv\eta^{(i)}$ \
+        }
+
+        % Computar $\widehat{\v P}_t^f$, la covarianza muestral de $\{ \v x_t^{f, (i)} \}_{i=1}^{N_p}$ \
+
+        $\widehat{\v x}_t^f = \frac{1}{N_p}\sum_{i=1}^{N_p} \v x_t^{f, (i)}$ \
+
+        $\widehat{\v P}_t^f = \frac{1}{N_p-1}\sum_{i=1}^{N_p} (\v x_t^{f, (i)} - \widehat{\v x}_t^{f}) (\v x_t^{f, (i)} - \widehat{\v x}_t^{f})^T$ \
+
+        $\widehat{\v K}_t = \widehat{\v P}_t^f \v H_t(\v R_t + \v H_t \widehat{\v P}_t^f \v H_t^T)^{-1}$ \
+
+        \For{$i=1, ..., N_p$} {
+            $ \v v^{(i)} \sim \mathcal{N}(\v 0, \v R_t)$ \
+
+            $ \v y_t^{(i)} = \v y_t + \v v^{(i)} $ \
+
+            $\v x_t^{a, (i)} = \v x_t^{f, (i)} + \widehat{\v K}_t (\v y_t^{(i)} - \v H_t \v x_t^{f, (i)})$ \
+        }
+
+    }
+\caption{EnKF estocástico}
+\end{algorithm}
+
+Notemos que la suposición de que el modelo de transición es lineal es la suposición que permite asumir que evolucionar los miembros del ensamble hacia adelante va a conservar la Gaussianidad de la muestra. Sin embargo, a diferencia del filtro de Kalman tradicional, no precisamos una expresión matricial $\v M_t$ del operador. El modelo se usa solamente para propagar las partículas hacia adelante por lo cual podemos relajar la hipótesis de linealidad y pensar en un operador general $\mathcal{M}_t$ que si es levemente no lineal podrá preservar la Gaussianidad en los pronósticos y que además puede ser tratado como una caja negra. 
+
+El EnKF que presentamos es solamente una implementación sencilla de esta idea pero la realidad es que existe una gran familia de filtros de Kalman por ensambles desarrollados para diferentes tipos de problemas. Entre ellos podemos destacar 
+% TODO: mencion y referencias a EnSRF ETKF, etc.
+
+% TODO: ventajas  desventajas de EnKFs
+
+\subsubsection{Inflación y localización}
+\subsection{VMPF}
 \section{Estado aumentado}
