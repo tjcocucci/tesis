@@ -211,13 +211,13 @@ $$ \v x_t^{f, (i)} = \v M_t \v x_{t-1}^{a, (i)} + \gv\eta_t^{(i)}$$
 con $\gv\eta_t^{(i)} \sim \mathcal{N}(\v 0, \v Q_t)$. Por lo tanto si calculamos la media y covarianza, obtenemos las mismas fórmulas que para el filtro de Kalman tradicional \ref{eq:kf_mean_pred} y \ref{eq:kf_var_pred}:
 \begin{align*}
     E[\v x_t^{f, (i)}] &= E[\v M_t \v x_{t-1}^{a, (i)} + \gv\eta_t^{(i)}] \\
-    &= \v M_t \v E[\v x_{t-1}^{a, (i)}] + E[\gv\eta_t^{(i)}] \\
+    &= \v M_t E[\v x_{t-1}^{a, (i)}] + E[\gv\eta_t^{(i)}] \\
     &= \v M_t \v x_{t-1}^a \\
     Var[\v x_t^{f, (i)}] &= Var[\v M_t \v x_{t-1}^{a, (i)} + \gv\eta_t^{(i)}] \\
     &= \v M_t Var[\v x_{t-1}^{a, (i)}] \v M_t^T + Var[\gv\eta_t^{(i)}] \\
     &= \v M_t \v P_t^a \v M_t^T + \v Q_t 
 \end{align*}
-donde hemos usado la independencia de $\gv\eta_t^{(i)}$ y $\v x_{t-1}^{a, (i)}$. Las partículas del pronóstico entonces constituyen efectivamente una muestra de la distribución del pronóstico.
+donde hemos usado la independencia de $\gv\eta_t^{(i)}$ y $\v x_{t-1}^{a, (i)}$ y que $Var[\v A \v X] = \v A Var[\v X] \v A^T$ cuando $\v A$ es un operador lineal. Las partículas del pronóstico entonces constituyen efectivamente una muestra de la distribución del pronóstico.
 
 Las partículas del análisis en el EnKF estocástico están definidas por 
 $$ \v x_t^{a, (i)} = \v x_t^{f, (i)} + \widehat{\v K_t} (\v y_t - (\v H_t \v x_t^{f, (i)} + \v v_t^{(i)}))$$
