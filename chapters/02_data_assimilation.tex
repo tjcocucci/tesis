@@ -148,9 +148,9 @@ El filtro de Kalman constituye una técnica robusta que da una solución exacta 
 
 Los filtros de partículas son también conocidos como métodos de Monte Carlo secuencial ya que utilizan el esquema secuencial de dos pasos de predicción-análisis descrito por las ecuaciones \ref{eq:forward_pred} y \ref{eq:forward_filt}. De hecho, el enfoque de estos métodos es el de resolver las integrales de estas ecuaciones, no de manera explícita sino utlizando las aproximaciones empíricas de las distribuciones implicadas. Si tenemos una función de densidad de probabilidades $p$ y una conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ muestreadas de manera independiente con esta probabilidad, i.e. $\v x^{(i)}\sim p$, entonces la aproximación empírica de $p$ basada en esta muestra es:
 \begin{align*}
-    p(\v x) \approx \frac{1}{N}\sum_{i=1}^N \delta(\v x^{(i)} - \v x)
+    p(\v x) \approx \frac{1}{N}\sum_{i=1}^N \delta_{\v x^{(i)}}(\v x)
 \end{align*}
-donde $\delta$ es la delta de Dirac que acumula toda la probabilidad en el punto $\v 0$ siendo nula en todo otro punto. Esta aproximación está sustentada en la ley de los grandes números, dado que se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas.
+donde $\delta_{\v a}$ es la delta de Dirac que acumula toda la probabilidad en el punto $\v a$ siendo nula en todo otro punto. Esta aproximación está sustentada en la ley de los grandes números, dado que se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas.
 \begin{align*}
     \frac{1}{N}\sum_{i=1}^N \v f(x^{(i)}) \xrightarrow{c. s.} \int f(\v x) p(\v x) d \v x
 \end{align*}
@@ -191,7 +191,6 @@ Este filtro de partículas que incorpora remuestreo suele ser denominado SIR (\t
 
 
 % TODO: Resolver asignación en algoritmos. Usar := y :~ ?
-% TODO: Resolver delta Dirac \delta(x-y) o \delta_y(x)
 \begin{algorithm}[H]\label{algo:sir_pf}    
     Muestrear partículas iniciales: $\{\v x_0^{(i)}\}_{i=1}^{N_p} \sim p(\v x_0)$
     
@@ -292,7 +291,7 @@ Por otro lado, hay que notar que estamos utilizando sobre cada partícula la fó
 Notemos que la suposición de que el modelo de transición es lineal es la suposición que permite asumir que evolucionar los miembros del ensamble hacia adelante va a conservar la Gaussianidad de la muestra. Sin embargo, a diferencia del filtro de Kalman tradicional, no precisamos una expresión matricial $\v M_t$ del operador. El modelo se usa solamente para propagar las partículas hacia adelante por lo cual podemos relajar la hipótesis de linealidad y pensar en un operador general $\mathcal{M}_t$ que si es levemente no lineal podrá preservar la Gaussianidad en los pronósticos y que además puede ser tratado como una caja negra. De hecho, el EnKF es habitualmente presentado como un método apto para modelos no lineales.
 
 % TODO: mejorar este párrafo?
-El EnKF que presentamos es solamente una implementación sencilla de esta idea pero la realidad es que existe una gran familia de filtros de Kalman por ensambles desarrollados para diferentes tipos de problemas. Los filtros de raíz cuadrada (EnSRF por sus siglas en inglés) y los filtros de Kalman por ensambles ajustados (EAKF) sortean necesidad de perturbar las observaciones, lo cual puede causar subestimación de covarianzas \citep{Whitaker2002, Anderson2001}. Los filtros transformados (ETKF por sus siglas en inglés) operan sobre el espacio generado por lso miembros del ensamble y consiguen una mejor eficiencia \citep{Bishop2001}.
+El EnKF que presentamos es solamente una implementación sencilla de esta idea pero la realidad es que existe una gran familia de filtros de Kalman por ensambles desarrollados para diferentes tipos de problemas. Los filtros de raíz cuadrada (EnSRF) y los filtros de Kalman por ensambles ajustados (EAKF) sortean necesidad de perturbar las observaciones, lo cual puede causar subestimación de covarianzas \citep{Whitaker2002, Anderson2001}. Los filtros transformados (ETKF) operan sobre el espacio generado por lso miembros del ensamble y consiguen una mejor eficiencia \citep{Bishop2001}.
 
 En general, los EnKFs son métodos robustos, relativamente fáciles de comprender e implementar y que han sido utilizados en una amplia variedad de problemas. Debido a su popularidad, existen muchas modificaciones para mitigar los problemas más comunes que suele presentar. Los EnKF son especialmente aptos para problemas de gran dimensionalidad ya que pueden representar distribuciones en este tipo de espacios con una cantidad relativamente chica de miembros de ensamble. Además, se pueden optimizar numéricamente y tienen potencial para ser implementados de manera paralela. A pesar de que pueden fallar en modelos altamente no lineales que resulten en pronósticos no Gaussianos, en general pueden dar buena performance incluso en presencia de no linealidades. Esta familia de filtros ha disputado con la técnica variacional 4DVAR como método de asimilación de datos operacional en predicción meteorológica numérica.
 
