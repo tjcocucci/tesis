@@ -201,3 +201,44 @@ Si adicionalmente dotamos a $q$ de ``Markovianidad'' en el sentido que $q(\v x_t
 \begin{align*}
     w_t^{(i)} &\propto w_{t-1}^{(i)} \frac{p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)}{q(\v x_t | \v x_{t-1}, \v y_t)}
 \end{align*}
+
+\section{EnKF} \label{appendix:enkf}
+
+Para mostrar que la formulación del EnKF estocástico es correcta, basta probar que la media y covarianza que se obtiene de considerar a los mimbros del ensamble como variables aleatorias coinciden con las del filtro de Kalman tradicional, el cual da una solución exacta al problema. Supongamos inductivamente que las partículas a tiempo $t-1$ cumplen con esto y veamos que podemos obtener las fórmulas correctas a tiempo $t$.
+
+Las partículas del pronóstico están definidas como 
+$$ \v x_t^{f, (i)} = \v M_t \v x_{t-1}^{a, (i)} + \gv\eta_t^{(i)}$$
+con $\gv\eta_t^{(i)} \sim \mathcal{N}(\v 0, \v Q_t)$. Por lo tanto si calculamos la media y covarianza, obtenemos las mismas fórmulas que para el filtro de Kalman tradicional \ref{eq:kf_mean_pred} y \ref{eq:kf_var_pred}:
+\begin{align*}
+    E[\v x_t^{f, (i)}] &= E[\v M_t \v x_{t-1}^{a, (i)} + \gv\eta_t^{(i)}] \\
+    &= \v M_t \v E[\v x_{t-1}^{a, (i)}] + E[\gv\eta_t^{(i)}] \\
+    &= \v M_t \v x_{t-1}^a \\
+    Var[\v x_t^{f, (i)}] &= Var[\v M_t \v x_{t-1}^{a, (i)} + \gv\eta_t^{(i)}] \\
+    &= \v M_t Var[\v x_{t-1}^{a, (i)}] \v M_t^T + Var[\gv\eta_t^{(i)}] \\
+    &= \v M_t \v P_t^a \v M_t^T + \v Q_t 
+\end{align*}
+donde hemos usado la independencia de $\gv\eta_t^{(i)}$ y $\v x_{t-1}^{a, (i)}$. Las partículas del pronóstico entonces constituyen efectivamente una muestra de la distribución del pronóstico.
+
+Las partículas del análisis en el EnKF estocástico están definidas por 
+$$ \v x_t^{a, (i)} = \v x_t^{f, (i)} + \widehat{\v K_t} (\v y_t - (\v H_t \v x_t^{f, (i)} + \v v_t^{(i)}))$$
+donde $\v v_t^{(i)} \sim \mathcal{N}(\v 0, \v R_t)$ y la aproximación a la ganancia de Kalman es $\widehat{\v K}_t = \widehat{\v P}_t^f \v H_t^T(\v R_t + \v H_t \widehat{\v P}_t^f \v H_t^T)^{-1}$ con $\widehat{\v P}_t^f$ denotando la covarianza muestral del ensamble de pronóstico. Probaremos que en el caso ideal en que estemos usando la matriz de ganancia verdadera (es decir la que utiliza la covarianza exacta del pronóstico, $\v P_t^f$) la media y covarianza del ensamble del análisis coinciden con las del filtro de Kalman \ref{eq:kf_mean_filter} y \ref{eq:kf_var_filter}.
+\begin{align*}
+    E[\v x_t^{a, (i)}] &= E[\v x_t^{f, (i)} + \v K_t (\v y_t - (\v H_t \v x_t^{f, (i)} + \v v_t^{(i)}))] \\
+    &= \v x_t^f + \v K_t E[(\v y_t - (\v H_t \v x_t^{f, (i)} + \v v_t^{(i)}))] \\
+    &= \v x_t^f + \v K_t (\v y_t - E[\v H_t \v x_t^{f, (i)}]) \\
+    &= \v x_t^f + \v K_t (\v y_t - \v H_t \v x_t^f)
+\end{align*}
+Por otro lado, para la varianza del ensamble de análisis tenemos que:
+\begin{align*}
+    Var[\v x_t^{a, (i)}] &= Var[\v x_t^{f, (i)} + \v K_t (\v y_t - (\v H_t \v x_t^{f, (i)} + \v v_t^{(i)}))] \\
+    &= Var[\v x_t^{f, (i)}] + Var[\v K_t (\v y_t - (\v H_t \v x_t^{f, (i)} + \v v_t^{(i)}))] \\
+    &+ 2 Cov[\v x_t^{f, (i)}, \v K_t (\v y_t - (\v H_t \v x_t^{f, (i)} + \v v_t^{(i)}))] \\
+    &= \v P_t^f + \v K_t Var[(\v H_t \v x_t^{f, (i)} + \v v_t^{(i)})]\v K_t^T + 2 Cov[\v x_t^{f, (i)}, - \v K_t \v H_t \v x_t^{f, (i)}] \\ 
+    &= \v P_t^f + \v K_t (\v H_t \v P_t^f \v H_t^T + \v R_t)\v K_t^T - 2 \v K_t \v H_t \v P_t^f \\
+    &= \v P_t^f + \v P_t^f \v H_t^T (\v H_t \v P_t^f \v H_t^T + \v R_t)^{-1}(\v H_t \v P_t^f \v H_t^T + \v R_t)\v K_t^T - 2 \v K_t \v H_t \v P_t^f \\
+    &= \v P_t^f + \v P_t^f \v H_t^T \v K_t^T - 2 \v K_t \v H_t \v P_t^f \\
+    &= \v P_t^f + (\v K_t \v H_t \v P_t^f)^T - 2 \v K_t \v H_t \v P_t^f \\
+    &= \v P_t^f - \v K_t \v H_t \v P_t^f \\
+    &= (\v I - \v K_t \v H_t) \v P_t^f 
+\end{align*}
+donde hemos usado la propiedad de la varianza de una suma ($Var[\v X + \v Y] = Var[\v X] + Var[\v Y] + Cov[\v X, \v Y]$), la independencia de $\v x_t^{f, (i)}$ con $\v v_t^{(i)}$ y el hecho que $\v K_t \v H_t \v P_t^f$ es una matriz simétrica.

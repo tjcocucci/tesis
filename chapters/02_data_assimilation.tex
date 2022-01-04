@@ -132,7 +132,7 @@ mientras que para el análisis resulta:
     \v x_t^a &= \v x_t^f + \mathbf{K}_t (\v y_t - \v H_t \v x_t^f) \label{eq:kf_mean_filter} \\ 
     \v P_t^a &= (\v I - \v K_t \v H_t) \v P_t^f \label{eq:kf_var_filter}
 \end{align}
-donde $\v K_t = \v P_t^f \v H_t(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se denomina matriz de ganancia de Kalman, mientras que el término $(\v y_t - \v H_t \v x_t^f)$ son denominadas innovaciones porque dan cuenta de la diferencia entre el pronóstico y las observación. La deducción de estas fórmulas está desarrollada en el apéndice \ref{appendix:kf}
+donde $\v K_t = \v P_t^f \v H_t^T(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se denomina matriz de ganancia de Kalman, mientras que el término $(\v y_t - \v H_t \v x_t^f)$ son denominadas innovaciones porque dan cuenta de la diferencia entre el pronóstico y las observación. La deducción de estas fórmulas está desarrollada en el apéndice \ref{appendix:kf}
 
 Notemos que la media de los pronósticos es tan solo la propagación hacia adelante de la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación. 
 
@@ -257,7 +257,7 @@ Supongamos que a tiempo $t-1$ contamos con un ensamble $\{ \v x_{t-1}^{a, (i)} \
 
 Para aplicar la actualización del filtro de Kalman ecesitamos computar $\v K_t$ la cual por su parte necesita de la matriz de covarianzas del pronóstico $\v P_t^f$. Sin embargo, a diferencia del filtro de Kalman, aquí no propagamos las matrices de covarianzas en el tiempo, sólo una muestra de la distribución y por ello no disponemos de una representación exacta de esta. De cualquier manera, es natural aproximar $\v P_t^f$ con la matriz de covarianza muestral del ensamble del pronóstico, $\widehat{\v P}_t^f$ para obtener una aproximación $\widehat{\v K}_t$ de la matriz de ganancia de Kalman.
 
-Por otro lado, hay que notar que estamos utilizando sobre cada partícula la fórmula de actualización de la media de la distribución, y cada partícula está siendo actualizada en base a la misma observación. Es posible demostrar que si hacemos esto, la covarianza del ensamble del análisis va a estar subestimada. La solución a este problema consiste en actualizar cada partícula usando una perturbación de la observación original. Para obtener el miembro del ensamble $\v x_t^{a, (i)}$ utilizaremos la observación modificada $\v y_t^{(i)} = \v y_t + \v v_t^{(i)}$ con $\v v_t{(i)} \sim \mathcal{N}(\v 0, \v R_t)$. El origen de este problema y su solución son planteados en \cite{Burgers1998}. El método resultante es denominado EnKF estocástico o EnKF con observaciones perturbadas y en \ref{algo:enkf_pert_obs} está descrito de manera algorítmica.
+Por otro lado, hay que notar que estamos utilizando sobre cada partícula la fórmula de actualización de la media de la distribución, y cada partícula está siendo actualizada en base a la misma observación. Es posible demostrar que si hacemos esto, la covarianza del ensamble del análisis va a estar subestimada. La solución a este problema consiste en actualizar cada partícula usando una perturbación de la observación original. Para obtener el miembro del ensamble $\v x_t^{a, (i)}$ utilizaremos la observación modificada $\v y_t^{(i)} = \v y_t + \v v_t^{(i)}$ con $\v v_t{(i)} \sim \mathcal{N}(\v 0, \v R_t)$. El origen de este problema y su solución son planteados en \cite{Burgers1998}. El método resultante es denominado EnKF estocástico o EnKF con observaciones perturbadas y en \ref{algo:enkf_pert_obs} está descrito de manera algorítmica. En \ref{appendix:enkf} demostramos que la formulación de este método es correcta.
 
 \begin{algorithm}[H]\label{algo:enkf_pert_obs}
     Muestrear ensamble inicial: $\{\v x_0^{a, (i)} \}_{i=1}^{N_p} \sim p(\v x_0)$
@@ -275,7 +275,7 @@ Por otro lado, hay que notar que estamos utilizando sobre cada partícula la fó
 
         $\widehat{\v P}_t^f = \frac{1}{N_p-1}\sum_{i=1}^{N_p} (\v x_t^{f, (i)} - \widehat{\v x}_t^{f}) (\v x_t^{f, (i)} - \widehat{\v x}_t^{f})^T$ \
 
-        $\widehat{\v K}_t = \widehat{\v P}_t^f \v H_t(\v R_t + \v H_t \widehat{\v P}_t^f \v H_t^T)^{-1}$ \
+        $\widehat{\v K}_t = \widehat{\v P}_t^f \v H_t^T(\v R_t + \v H_t \widehat{\v P}_t^f \v H_t^T)^{-1}$ \
 
         \For{$i=1, ..., N_p$} {
             $ \v v^{(i)} \sim \mathcal{N}(\v 0, \v R_t)$ \
