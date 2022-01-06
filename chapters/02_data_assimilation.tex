@@ -162,14 +162,14 @@ Los filtros de partículas son también conocidos como métodos de Monte Carlo s
 \end{align*}
 donde $\delta_{\v a}$ es la delta de Dirac que acumula toda la probabilidad en el punto $\v a$ siendo nula en todo otro punto. Esta aproximación está sustentada en la ley de los grandes números, dado que se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas.
 \begin{align*}
-    \frac{1}{N}\sum_{i=1}^N \v f(x^{(i)}) \xrightarrow{c. s.} \int f(\v x) p(\v x) d \v x
+    \frac{1}{N}\sum_{i=1}^N f(\v x^{(i)}) \xrightarrow{c. s.} \int f(\v x) p(\v x) d \v x
 \end{align*}
 
 Existe una generalización de la aproximación de Monte Carlo denominada muestreo de importancia. A pesar de su nombre es un método para aproximar integrales. Cuando no es posible muestrear de $p$ se puede entonces muestrear otra distribución con densidad $q$ que actúe de proxy de $p$. En principio la única condición para $q$ es que su soporte contenga al de $p$. Este método también admite que no se pueda evaluar exactamente $p$ y $q$ sino que sólo podamos evaluar versiones no normalizadas $\tilde{p}$ y $\tilde{q}$ de estas densidades. Entonces, si tenemos un conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ tales que $\v x^{(i)}\sim q$, podemos hacer la aproximación dada por las siguientes fórmulas:
 \begin{align*}
     \int f(\v x) p(\v x) d \v x &\approx \sum_{i=1}^N w_i f(\v x^{(i)}) \\
     w_i &= \tilde{w}_i / \textstyle\sum_{i=1}^N \tilde{w}_i \\
-    \tilde{w}_i &= \tilde{p}(\v x_i) / \tilde{q}(\v x_i)
+    \tilde{w}_i &= \tilde{p}(\v x^{(i)}) / \tilde{q}(\v x^{(i)})
 \end{align*}
 donde $w_i$ son denominados pesos de importancia y $\tilde{w}_i$ son sus versiónes no normalizadas. Por su parte, $q$ es denominada la distribución \textit{propuesta}.
 
@@ -305,7 +305,7 @@ El EnKF que presentamos es solamente una implementación sencilla de esta idea p
 
 En general, los EnKFs son métodos robustos, relativamente fáciles de comprender e implementar y que han sido utilizados en una amplia variedad de problemas. Debido a su popularidad, existen muchas modificaciones para mitigar los problemas más comunes que suele presentar. Los EnKF son especialmente aptos para problemas de gran dimensionalidad ya que pueden representar distribuciones en este tipo de espacios con una cantidad relativamente chica de miembros de ensamble. Además, se pueden optimizar numéricamente y tienen potencial para ser implementados de manera paralela. A pesar de que pueden fallar en modelos altamente no lineales que resulten en pronósticos no Gaussianos, en general pueden dar buena performance incluso en presencia de no linealidades. Esta familia de filtros ha disputado con la técnica variacional 4DVAR como método de asimilación de datos operacional en predicción meteorológica numérica.
 
-\subsubsection{Inflación y localización}
+\paragraph{Inflación y localización} \
 
 Los EnKFs son utilizados en escenarios de alta dimensionalidad en los que surgen una variedad de problemas. Por un lado, debido a que la cantidad de miembros de ensamble resulta pequeña en comparación con la dimensión de las variables de estado, el error de muestreo asociado puede resultar en que la matriz de covarianza predictiva $\widehat{\v P}_t^f$ esté subestimada o que tenga deficiencias de rango \citep{Miyoshi2011}. Esta situación puede estar incluso profundizada por una mala especificación del error de modelo. Esto puede provocar que la dispersión del ensamble sea muy compacta lo cual da como resultado que la certidumbre sobre la predicción sea mayor de lo que debería ser y por lo tanto la información observacional sea menos considerada por el sistema de asimilación de datos. Como resultado, es posible que el filtro comienze a ignorar las observaciones y diverja de la trayectoria que debería estimar. Un paliativo a esta situación es la llamada inflación de covarianza que consiste en agrandar artificialmente la covarianza predictiva \citep{Anderson1999}. Existen diversas implementaciones de esta idea pero distinguimos la inflación aditiva que consiste en añadir ruido a los miembros del ensamble y la inflación multiplicativa que en general es implementada multiplicando la matriz de covarianzas (o las desviaciones de los miembros del ensamble respecto a su media) por un escalar mayor a $1$. Para mejorar la calidad de la matriz de covarianzas predictiva, además se suele usar localización. Esta metodología consiste en reducir el valor de los términos fuera de la diagonal que correspondan a covarianzas de variables lejanas espacialmente y que por lo tanto no deberían estar muy correlacionadas. Esto se hace porque un número bajo de miembros de ensamble puede provocar correlaciones espúreas que deterioren la calidad de la matriz de covarianzas \citep{Hamill2001}. Utilizando localización se puede mitigar la deficiencia de rango y el error de muestreo. 
 
