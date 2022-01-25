@@ -27,5 +27,50 @@ Para la extensión de $\v \mathcal{M}_t$ sobre los parámetros es común conside
 La técnica de estado aumentado suele ser adecuada para muchos parámetros físicos y por lo tanto es tentador utilizarla para el tratamiento de los parámetros estocásticos. Sin embargo, debido a la falta de correlación entre la información observacional y los parámetros estocásticos, el método no produce buenos resultados. En \cite{Delsole2010} se puede encontrar una definición algo más precisa de parámetros determinísticos y estocásticos así como una justificación más completa de por qué aumentar el estado con parámetros estocásticos no puede dar buenas estimaciones.
 
 \section{Algoritmo EM}
+
+El algoritmo EM se utiliza para obtener estimadores de máxima verosimilitud en sistemas parcialmente observados. Es en realidad una metodología general y no una solución \textit{off-the-shelf}. Su aplicación más conocida es en el contexto de aprendizaje no supervisado para hacer \textit{clustering} modelando el problema con una mezcla de Gaussianas \citep{Bishop2006} pero tiene una gran diversidad de utilidades. Comenzaremos dando su forma general, luego su aplicación en lotes para estimación de matrices de covarianzas en \textit{state space models} con error aditivo Gaussiano y finalmente su adaptación \textit{online}.
+
+El algoritmo EM en un modelo probabilístico en el que contamos con una variable observada $\v Y$, variables no observadas $\v X$ y un parámetro $\gv\theta$ el cual describe a la probbilidad conjunta $p(\v X,  \v Y; \gv\theta)$. El objetivo es utilizar datos $\v Y$ para estimar el parámetro $\gv\theta$ mediante la maximización de la verosimilitud $p(\v Y; \gv\theta)$ o equivalentemente, de su logaritmo. Si dotamos a las variables no observadas de una distribución \textit{a priori} $q(\v X)$ podemos obtener la expresión:
+
+\begin{align}
+    \log p(\v Y; \gv\theta) &=  \log \int p(\v X, \v Y; \gv\theta) d\v X \\
+    &=  \underbrace{\int q(\v X) \log \frac{q(\v X)}{p(\v X | \v Y; \gv\theta)} d\v X}_{KL(\int q(\v X) \rVert p(\v X | \v Y; \gv\theta))} + \underbrace{\int q(\v X) \log \frac{p(\v X, \v Y; \gv\theta)}{q(\v X)} d\v X}_{\mathcal{L}(q, \gv\theta)} \label{eq:elbo_KL}
+\end{align}
+donde $KL$ es la divergencia de Kullback-Leibler y $\mathcal{L}$ es llamada ELBO (\textit{evidence lower bound}). Es común interpretar a $KL$ como una ``distancia'' entre probabilidades y de hecho, cumple que $KL(q \rVert p) \geq 0$ y se anula sí y sólo si $p = q$ en casi todo punto. Al ser $KL$ mayor o igual a 0, esto significa que $\log p(\v Y; \gv\theta) \geq \mathcal{L}(q, \gv\theta)$, es decir que la ELBO es una cota inferior de la log-verosimilitud.  
+
+El algoritmo EM provee estimaciones $\gv\theta_0, \gv\theta_1, ...$ tales que $\log p(\v Y; \gv\theta_{t+1}) \geq \log p(\v Y; \gv\theta_t)$ que convergen a un máximo local de la verosimilitud \citep{Wu1983}. Como dado un $q$ fijo, la $\mathcal{L}(q,\gv\theta)$ es una cota inferior de $\log p(\v Y; \gv\theta)$ para todo $\gv\theta$, entonces la idea es maximizar $\mathcal{L}(q,\gv\theta)$ primero respecto a $q$ y luego respecto a $\gv\theta$. Supongamos que ya contamos con la estimación de la $t$-ésima iteración, $\gv\theta_t$. Si queremos obtener $q = \argmax\limits_{q}\mathcal{L}(q,\gv\theta_t)$, notemos que la igualdad \ref{eq:elbo_KL} se satisface para todo $q$ por lo que debemos elegir el valor que anule a la divergencia de Kullback-Leibler, es decir $q = p(\v X | \v Y; \gv\theta_t)$. Luego, dejamos fijo $q$ y elegimos $\theta_{t+1}$ tal que $\mathcal{L}(q,\gv\theta_{t+1}) \geq \mathcal{L}(q,\gv\theta_t)$. De esta manera obtendremos que 
+\begin{align*}
+    \log p(\v Y; \gv\theta_t) &= \mathcal{L}(p(\v X | \v Y; \gv\theta_t), \gv\theta_t) + \overbrace{KL(p(\v X | \v Y; \gv\theta_t) \rVert p(\v X | \v Y; \gv\theta_t))}^{0} \\
+    &= \mathcal{L}(p(\v X | \v Y; \gv\theta_t), \gv\theta_t) \\
+    &\leq \mathcal{L}(p(\v X | \v Y; \gv\theta_t), \gv\theta_{t+1}) \\
+    % &\leq \mathcal{L}(p(\v X | \v Y; \gv\theta_t), \gv\theta_{t+1}) + \overbrace{KL(p(\v X | \v Y; \gv\theta_t) \rVert p(\v X | \v Y; \gv\theta_{t+1}))}^{\geq 0} \\
+    &\leq \log p(\v Y; \gv\theta_{t+1})
+\end{align*}
+y por lo tanto que las estimaciones producidas incrementan la verosimilitud.
+
+Notemos además que una vez elegido $q$ tal que anule a la divergencia de Kullback-Liebler en la iteración $t$ obtenemos que:
+\begin{align*}
+    \mathcal{L}(p(\v X | \v Y; \gv\theta_t), \gv\theta) &= \int p(\v X | \v Y; \gv\theta_t) \log \frac{p(\v X, \v Y; \gv\theta)}{p(\v X | \v Y; \gv\theta_t)} d\v X \\
+    &= \int p(\v X | \v Y; \gv\theta_t) \log p(\v X, \v Y; \gv\theta) d\v X - \int p(\v X | \v Y; \gv\theta_t) \log p(\v X | \v Y; \gv\theta_t) d\v X \\
+    &\propto_{\theta} \int p(\v X | \v Y; \gv\theta_t) \log p(\v X, \v Y; \gv\theta) d\v X \\
+    &\dot{=} E_{\gv\theta_t}[\log p(\v X, \v Y; \gv\theta)| \v Y]
+\end{align*}
+es decir que la ELBO se puede expresar como una esperanza condicional una vez que elegimos $q$ que maximiza a $\mathcal{L}$. Debido a esto, la maximización sobre $q$ recibe el nombre de \textit{E-step}. Por otra parte el \textit{M-step} corresponde a la maximización sobre $\gv\theta$. El procedimiento admite entonces la caracterización que presentada en \ref{algo:general_EM}.
+
+\begin{algorithm}[H]\label{algo:general_EM}
+
+    Elegir valor inicial $\gv\theta_0$:\
+
+    \For{$t=0, 1, ..., $}{
+        E-step: \
+            Computar $\mathcal{Q}(\gv\theta, \gv\theta_t) = E_{\gv\theta_t}[\log p(\v X, \v Y; \gv\theta)| \v Y]$
+
+        M-step: \
+            $\gv\theta_{t+1} = \argmax\limits_{\gv \theta} \mathcal{Q}(\gv\theta, \gv\theta_t)$
+    }
+\caption{EM general}
+\end{algorithm}
+
+
 \subsection{Batch EM} \label{sec:batchEM}
 \subsection{Online EM} \label{sec:onlineEM}
