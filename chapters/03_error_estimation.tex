@@ -38,7 +38,7 @@ El algoritmo EM en un modelo probabilístico en el que contamos con una variable
 \end{align}
 donde $KL$ es la divergencia de Kullback-Leibler y $\mathcal{L}$ es llamada ELBO (\textit{evidence lower bound}). Es común interpretar a $KL$ como una ``distancia'' entre probabilidades y de hecho, cumple que $KL(q \rVert p) \geq 0$ y se anula sí y sólo si $p = q$ en casi todo punto. Al ser $KL$ mayor o igual a 0, esto significa que $\log p(\v Y; \gv\theta) \geq \mathcal{L}(q, \gv\theta)$, es decir que la ELBO es una cota inferior de la log-verosimilitud.  
 
-El algoritmo EM provee estimaciones $\gv\theta_0, \gv\theta_1, ...$ tales que $\log p(\v Y; \gv\theta_{t+1}) \geq \log p(\v Y; \gv\theta_t)$ que convergen a un máximo local de la verosimilitud \citep{Wu1983}. Como dado un $q$ fijo, la $\mathcal{L}(q,\gv\theta)$ es una cota inferior de $\log p(\v Y; \gv\theta)$ para todo $\gv\theta$, entonces la idea es maximizar $\mathcal{L}(q,\gv\theta)$ primero respecto a $q$ y luego respecto a $\gv\theta$. Supongamos que ya contamos con la estimación de la $t$-ésima iteración, $\gv\theta_t$. Si queremos obtener $q = \argmax\limits_{q}\mathcal{L}(q,\gv\theta_t)$, notemos que la igualdad \ref{eq:elbo_KL} se satisface para todo $q$ por lo que debemos elegir el valor que anule a la divergencia de Kullback-Leibler, es decir $q = p(\v X | \v Y; \gv\theta_t)$. Luego, dejamos fijo $q$ y elegimos $\theta_{t+1}$ tal que $\mathcal{L}(q,\gv\theta_{t+1}) \geq \mathcal{L}(q,\gv\theta_t)$. De esta manera obtendremos que 
+El algoritmo EM provee estimaciones $\gv\theta_0, \gv\theta_1, ...$ tales que $\log p(\v Y; \gv\theta_{t+1}) \geq \log p(\v Y; \gv\theta_t)$ que convergen a un máximo local de la verosimilitud \citep{Wu1983}. Como dado un $q$ fijo, la $\mathcal{L}(q,\gv\theta)$ es una cota inferior de $\log p(\v Y; \gv\theta)$ para todo $\gv\theta$, entonces la idea es maximizar $\mathcal{L}(q,\gv\theta)$ primero respecto a $q$ y luego respecto a $\gv\theta$. Supongamos que ya contamos con la estimación de la $t$-ésima iteración, $\gv\theta_t$. Si queremos obtener $q = \argmax\limits_{q}\mathcal{L}(q,\gv\theta_t)$, notemos que la igualdad \ref{eq:elbo_KL} se satisface para todo $q$ por lo que debemos elegir el valor que anule a la divergencia de Kullback-Leibler, es decir $q = p(\v X | \v Y; \gv\theta_t)$. Luego, dejamos fijo $q$ y elegimos $\theta_{t+1} = \argmax\limits_{\gv\theta} \mathcal{L}(q,\gv\theta)$. De esta manera obtendremos que 
 \begin{align*}
     \log p(\v Y; \gv\theta_t) &= \mathcal{L}(p(\v X | \v Y; \gv\theta_t), \gv\theta_t) + \overbrace{KL(p(\v X | \v Y; \gv\theta_t) \rVert p(\v X | \v Y; \gv\theta_t))}^{0} \\
     &= \mathcal{L}(p(\v X | \v Y; \gv\theta_t), \gv\theta_t) \\
@@ -71,6 +71,33 @@ es decir que la ELBO se puede expresar como una esperanza condicional una vez qu
 \caption{EM general}
 \end{algorithm}
 
+La metodología que presentamos tiene la conveniencia de incrementar (o mantener) la verosimilitud en cada paso, sin embargo no garantiza que el máximo encontrado sea un máximo global de la verosimilitud. Por otro lado, cuando la probabilidad conjunta de las variables observadas y no observadas pertenece a la familia exponencial, tenemos simplificaciones importantes en el cómputo; esto no siempre es el caso y existen variantes del algoritmo EM que consideran hacer una maximización parcial el el \textit{M-step} (EM generalizado). Otra generalización consiste en una optimización parcial en la elección de $q$ en el \textit{E-step} (EM incremental, \cite{Neal1998}) que se implementa mediante la incorporación secuencial de las observaciones. Este método ayuda a una convergencia más rápida del algoritmo, que de otro modo tiene una convergencia en muchos casos lenta. Además, es el punto de partida para las versiones \textit{online} del EM que veremos más adelate.
 
 \subsection{Batch EM} \label{sec:batchEM}
+
+Los modelos de Markov escondidos son efectivamente sistemas parcialmente observados que en principio, admiten la aplicación del algoritmo EM. Pero además la estrctura Markoviana de dependencia temporal de las variables no observadas junto a la independencia condicional de las observaciones puede ser utilizada para obtener una expresión más sencilla de la ELBO. Haremos ahora la suposición de que contamos con un modelo de Markov escondido en un intervalo de tiempos $t = 0, 1, ..., T$ para los cuales tenemos variables latentes $\v x_{0:T}$ y observaciones $\v y_{1:T}$. Las propiedades mencionadas sobre modelos de Markov escondidos nos permiten factorizar a la probabilidad conjunta (necesaria para computar la ELBO) como:
+\begin{align}
+    p(\v x_{0:T}, \v y_{1:T} ; \gv\theta) &= p(\v x_0 ; \gv\theta) \prod_{t=1}^T p(\v x_t | \v x_{t-1} ; \gv\theta) p(\v y_t | \v x_t ; \gv\theta) \\
+    &= p(\v x_0 ; \gv\theta) \prod_{t=1}^T p(\v x_t, \v y_t | \v x_{t-1} ; \gv\theta)
+\end{align}
+
+Con esta expresión se puede obtener entonces la siguiente para la ELBO correspondiente a la $i$-ésima iteración del método, una vez se eligió a $q$ como la distribución de las variables latentes condicionadas a las observaciones:
+\begin{align}
+    \mathcal{L}(p(\v x_{0:T} | \v y_{1:T} ; \gv\theta_i), \gv\theta) &\propto_{\gv\theta} \sum_{t=1}^T \int p(\v x_{1:T} | \v y_{1:T} ; \gv\theta_i) \log p(\v x_t, \v y_t | \v x_{t-1} ; \gv\theta) d\v x_{1:T} \\
+    &= \sum_{t=1}^T E_{\gv\theta_i} [\log p(\v x_t, \v y_t | \v x_{t-1} ; \gv\theta) | \v y_{1:T}]
+\end{align}
+En esta expresión hemos quitado el término correspondiente a $p(\v x_0 ; \gv\theta)$ bajo la suposición de que no hay parametros desconocidos en la distribución inicial. Esta suposición no es necesaria y de hecho en \cite{Dreano2017} se estima su media y varianza. Ahora haremos una suposición extra que nos permitirá obtener una forma analítica del gradiente de la ELBO: supondremos que $p(\v x_t, \v y_t | \v x_{t-1} ; \gv\theta)$ pertenece a la familia exponencial. Este supuesto no es extremadamente restrictivo puesto que muchas distribuciones relevantes son de la familia exponencial incluyendo, importantemente, a la Gaussiana. Tendremos entonces que:
+\begin{align*}
+    p(\v x_t, \v y_t | \v x_{t-1} ; \gv\theta) = h(\v x_t, \v y_t) \exp(\psi(\gv\theta)\cdot s(\v x_{t-1}, \v x_t, \v y_t) - A(\gv\theta))
+\end{align*}
+donde $s(\v x_{t-1}, \v x_t, \v y_t)$ es llamado el estadístico suficiente, $\psi(\gv\theta)$ la parametrización natural y $h$ y $A$ son funciones \citep{Wasserman2004}. El gradiente de la ELBO respecto al parámetro se puede computar como:
+\begin{align}
+    \nabla_{\gv\theta} \mathcal{L}(p(\v x_{0:T} | \v y_{1:T} ; \gv\theta_i), \gv\theta) = \nabla_{\gv\theta} \psi(\gv\theta) \cdot \sum_{t=1}^T E_{\gv\theta_i} [s(\v x_{t-1}, \v x_t, \v y_t) | \v y_{1:T}] - T\nabla_{\gv\theta}A(\gv\theta)
+\end{align}
+con lo cual anulando el gradiente obtenemos la siguiente ecuación
+\begin{align} \label{eq:null_elbo_grad}
+    \nabla_{\gv\theta} \psi(\gv\theta) \cdot S_i - \nabla_{\gv\theta}A(\gv\theta) = 0
+\end{align}
+donde usamos la nomenclatura $S_i = \frac{1}{T}\sum_{t=1}^T E_{\gv\theta_i} [s(\v x_{t-1}, \v x_t, \v y_t) | \v y_{1:T}]$. El valor del parámetro que cumpla con \ref{eq:null_elbo_grad} será el que maximice la ELBO y por lo tanto el valor subsiguiente del EM, $\gv\theta_{i+1}$. Más precisamente, el valor que anula el gradiente es un punto crítico pero en este caso está garantizado que es un máximo debido a propiedades del Hessiano en familias exponenciales \citep{Wainwright2008}. Notemos que la cantidad $S_i$ un promedio sobre toda la ventana temporal $t=1, .., T$ valores esperados de los estadísticos suficientes condiconados a \textit{todas} las observaciones y computado con la última estimación disponible del parámetro, $\gv\theta_i$. El condicionamiento sobre toda la ventana de observaciones implica que el valor esperado esta siendo computado utilizando las distribuciones suavizantes. El método EM que se obtiene para modelos de Markov escondidos bajo la hipótesis de familia exponencial consiste entonces en un \textit{E-step} en el que computamos $S_i$ y un \textit{M-step} en el que resolvemos la ecuación que anula el gradiente de la ELBO (\ref{eq:null_elbo_grad}).
+
 \subsection{Online EM} \label{sec:onlineEM}
