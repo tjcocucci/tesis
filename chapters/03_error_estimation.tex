@@ -100,4 +100,21 @@ con lo cual anulando el gradiente obtenemos la siguiente ecuación
 \end{align}
 donde usamos la nomenclatura $S_i = \frac{1}{T}\sum_{t=1}^T E_{\gv\theta_i} [s(\v x_{t-1}, \v x_t, \v y_t) | \v y_{1:T}]$. El valor del parámetro que cumpla con \ref{eq:null_elbo_grad} será el que maximice la ELBO y por lo tanto el valor subsiguiente del EM, $\gv\theta_{i+1}$. Más precisamente, el valor que anula el gradiente es un punto crítico pero en este caso está garantizado que es un máximo debido a propiedades del Hessiano en familias exponenciales \citep{Wainwright2008}. Notemos que la cantidad $S_i$ un promedio sobre toda la ventana temporal $t=1, .., T$ valores esperados de los estadísticos suficientes condiconados a \textit{todas} las observaciones y computado con la última estimación disponible del parámetro, $\gv\theta_i$. El condicionamiento sobre toda la ventana de observaciones implica que el valor esperado esta siendo computado utilizando las distribuciones suavizantes. El método EM que se obtiene para modelos de Markov escondidos bajo la hipótesis de familia exponencial consiste entonces en un \textit{E-step} en el que computamos $S_i$ y un \textit{M-step} en el que resolvemos la ecuación que anula el gradiente de la ELBO (\ref{eq:null_elbo_grad}).
 
+\subsubsection*{El caso Gaussiano}
+Ahora trataremos el caso en el que el error observacional y de modelo sean aditivos y Gaussianos, es decir que tenemos:
+\begin{align}
+    p(\v x_t | \v x_{t-1}) &\sim \mathcal{N}(\mathcal{M}_t(\v x_{t-1}), \v Q) \\
+    p(\v y_t | \v x_t) &\sim \mathcal{N}(\mathcal{H}_t(\v x_t), \v R)
+\end{align}
+y buscamos estimar $\gv\theta = (\v Q, \v R)$, las matrices de covarianzas del error de modelo y observacional respectivamente. Notemos que, no estamos considerando que estas matrices cambien en el tiempo, es decir que suponemos que corresponden a toda la ventana temporal. Además, debido a la independencia condicional de las observaciones de los modelos de Markov escondidos, tenemos que $p(\v x_t, \v y_t | \v x_{t-1}) = p(\v x_t | \v x_{t-1}) (\v y_t | \v x_t)$ y como supusimos que $p(\v x_t | \v x_{t-1})$ y $(\v y_t | \v x_t)$ son Gaussianas, esto implica que $p(\v x_t, \v y_t | \v x_{t-1})$ también lo es. Esto implica que seguimos bajo la suposición de familia exponencial que enunciamos anteriormente. La cantidad $S_i$, en este caso puede ser pensada como una tupla $(S_i^{\v Q}, S_i^{\v R})$ y la podemos computar mediante las siguientes expresiones que corresponden al \textit{E-step}:
+\begin{align}
+    S_i^{\v Q} &= \frac{1}{T}\sum_{t=1}^T E_{\gv\theta_i}[(\v x_t - \mathcal{M}_t(\v x_{t-1}))(\v x_t - \mathcal{M}_t(\v x_{t-1}))^T | \v y_{1:T}] \label{eq:batchEM_SQ} \\
+    S_i^{\v R} &= \frac{1}{T}\sum_{t=1}^T E_{\gv\theta_i}[(\v y_t - \mathcal{H}_t(\v x_t))(\v y_t - \mathcal{H}_t(\v x_t))^T | \v y_{1:T}] \label{eq:batchEM_SR}
+\end{align}
+Por otro lado, la ecuación \ref{eq:null_elbo_grad}, para el caso Gaussiano tiene como solución exactamente a la cantidad $S_i$, con lo cual el \textit{M-step} no requiere ningún cómputo adicional. La verificación de que $\gv\theta = S_i$ anula al gradiente de la ELBO se puede encontar en el apéndice junto con la representación de una densidad Gaussiana multivariada como miembro de la familia exponencial.
+% TODO: apendice
+
+Las ecuaciones \ref{eq:batchEM_SQ} y \ref{eq:batchEM_SR}, nos dan fórmulas para computar sucesivas estimaciones de $\v Q$ y $\v R$ y constituyen las fórmulas principales utilizadas en \cite{Dreano2017, Tandeo2015, Pulido2019}. Sin embargo, requieren el cómputo de valores esperados condicionados a la totalidad de la ventana de observaciones, $\v y_{1:T}$. Si se cuenta con una representación de partículas de las distribuciones suavizantes $p(\v x_t | \v x_{1:T})$ para todo $t$, entonces los valores esperados se pueden aproximar con estimadores de Monte Carlo. Notablemente, el EnKS es una técnica que provee estas representaciones y que también es apropiada para sistemas con errores Gaussianos aditivos; por lo tanto es compatible con esta aplicación del EM. En el algoritmo TODO podemos encontrar la implementación de este método. 
+
+
 \subsection{Online EM} \label{sec:onlineEM}
