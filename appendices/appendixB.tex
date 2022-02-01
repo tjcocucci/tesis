@@ -1,0 +1,33 @@
+\chapter{Algoritmo EM}
+\section{Gaussiana multivariada como miembro de la familia exponencial}\label{appendix:exp_family}
+
+Aquí presentamos la representación de densidades de probabilidad de la familia exponencial y cómo se puede escribir a la Gaussiana como miembro de dicha familia. Luego damos la solución de la ecuación \ref{eq:null_elbo_grad} para encontrar el valor del parámetro que anula a la ELBO en el caso Gaussiano.
+
+Se dice que una probabilidad pertenece a la familia exponencial si su densidad de probabilidad, parametrizada por $\gv\theta$ puede ser escrita como:
+$$p(\v x; \gv\theta) = h(\v x) \exp(\psi(\gv\theta) \cdot S(\v x) - A(\gv\theta))$$
+donde $S(\v x)$ es llamado el estadístico suficiente, $\psi(\gv \theta)$ la parametrización natural y $h$ y $A$ son funciones bien definidas donde es importante que $S$ sólo depende de $\v x$ y $A$ sólo depende del parámetro $\gv\theta$. \citep{Wasserman2004}.
+
+La densidad de probabilidad de una Gaussiana multivariada de dimensionalidad $N$ con media $\gv\mu$ y covarianza $\gv\Sigma$ es habitualmente expresada como:
+$$p(\v x; \gv\theta) = (2\pi)^{-\frac{k}{2}} |\gv\Sigma|^{-\frac{1}{2}} \exp \{ - \frac{1}{2}(\v x- \gv\mu)^T \gv\Sigma^{-1}(\v x-\gv\mu) \}$$
+
+Nuestro objetivo es expresar esta función con la forma de la familia exponencial considerando como parámetro solamente a la varianza $\gv\Sigma$ y considerando que $\gv\mu$ es conocido. Para ello consideremos la extensión del producto punto entre vectores a matrices como el producto Frobenious (elemento a elemento). Esto permite que la forma cuadrática dentro de la exponencial de la densidad Gaussiana se pueda reescribir como:
+$$(\v x- \gv\mu)^T \gv\Sigma^{-1}(\v x-\gv\mu) = \gv\Sigma^{-1} \cdot ((\v x- \gv\mu) (\v x-\gv\mu)^T)$$
+y por lo tanto logramos la forma de la familia exponencial usando:
+\begin{align*}
+    h(\v x) &= (2\pi)^{-\frac{N}{2}} \\
+    \psi(\gv\theta) &=  -\frac{1}{2}\gv\Sigma^{-1} \\ 
+    S(\v x) &= (\v x- \gv\mu) (\v x-\gv\mu)^T \\
+    A(\gv\theta) &= \frac{1}{2} \log |\gv\Sigma|.
+\end{align*} 
+
+\section{Punto crítico de la ELBO en caso Gaussiano}\label{appendix:null_grad_elbo}
+
+Aquí damos una solución para la ecuación \ref{eq:null_elbo_grad} en el caso Gaussiano utilizando la expresión de la densidad de probabilidad como mimembro de la familia exponencial desarrollada en \ref{appendix:exp_family}:
+\begin{align*}
+    \nabla_{\gv\theta} \psi(\gv\theta) \cdot S - \nabla_{\gv\theta} A(\gv \theta) &= 0 \\
+    -\frac{1}{2} \nabla_{\gv\Sigma}  (\v x- \gv\mu)^T \gv\Sigma^{-1}(\v x-\gv\mu) - \nabla_{\gv\Sigma} \frac{1}{2} \log |\gv\Sigma| &= 0 \\
+    \frac{1}{2} \gv\Sigma^{-1} (\v x- \gv\mu)(\v x-\gv\mu)^T \gv\Sigma^{-1} - \frac{1}{2} \gv\Sigma^{-1} &= 0 \\
+    \frac{1}{2} \gv\Sigma^{-1} S \gv\Sigma^{-1} - \frac{1}{2} \gv\Sigma^{-1} &= 0 \\
+    S &= \gv\Sigma 
+\end{align*}
+donde hemos usado la expresión $\frac{\partial \log|\v X|}{\partial \v X} = \v X^{-T}$ para la derivada del logaritmo del determinante y $\frac{\partial \v a^T \v X^{-1} \v b }{\partial \v X} = \v X^{-T} \v a \v b^T \v X^{-1}$ para la derivada de la forma cuadrática \cite{Petersen2012}.
