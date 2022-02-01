@@ -153,5 +153,7 @@ Las ecuaciones \ref{eq:batchEM_SQ} y \ref{eq:batchEM_SR}, nos dan fórmulas para
 \caption{EM-EnKS}
 \end{algorithm}
 
+Podemos ver que el algoritmo involucra, para cada iteración, procesar las iteraciones hacia adelante mediante predicción y filtrado con el EnKF, reprocesarlas hacia atrás con el EnKS y luego computar con Monte Carlo las actualizaciones de los parámetros. Las pasadas hacia adelante y hacia atrás provienen de que el EnKF y EnKS son implementaciones del algoritmo \textit{forward-backward}. Esto significa que para utilizar este algoritmo debemos procesar todas las observaciones reiteradas veces. Además del costo computacional, esto implica que las observaciones tienen que ser almacenadas y no se contempla una posible incorporación de nuevas observaciones, situación que sería esperable en un sistema en tiempo real. Aunque el \textit{batch EM} combinado con EnKS es un método robusto para estimar la estrctura general de $\v Q$ y $\v R$ su naturaleza \textit{offline} lo puede hacer impláctico en algunas situaciones y demasiado costoso computacionalmente. Además, no siempre es posible o factible obtener valores esperados respecto a distribuciones suavizantes. Por estos motivos se han desarrollado técnicas \textit{online} o secuenciales de estimación de parámetros estocásticos. 
 
 \subsection{Online EM} \label{sec:onlineEM}
+
