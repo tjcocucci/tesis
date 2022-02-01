@@ -55,13 +55,13 @@ Notemos además que una vez elegido $q$ tal que anule a la divergencia de Kullba
     &\propto_{\theta} \int p(\v X | \v Y; \gv\theta_t) \log p(\v X, \v Y; \gv\theta) d\v X \\
     &\dot{=} E_{\gv\theta_t}[\log p(\v X, \v Y; \gv\theta)| \v Y]
 \end{align*}
-es decir que la ELBO se puede expresar como una esperanza condicional una vez que elegimos $q$ que maximiza a $\mathcal{L}$. Debido a esto, la maximización sobre $q$ recibe el nombre de \textit{E-step}. Por otra parte el \textit{M-step} corresponde a la maximización sobre $\gv\theta$. El procedimiento admite entonces la caracterización que presentada en \ref{algo:general_EM}.
+es decir que la ELBO se puede expresar como una esperanza condicional una vez que elegimos $q$ que maximiza a $\mathcal{L}$. Debido a esto, la maximización sobre $q$ recibe el nombre de \textit{E-step}. Por otra parte el \textit{M-step} corresponde a la maximización sobre $\gv\theta$. El procedimiento admite entonces la caracterización que presentada en \ref{algo:general_EM} en el que suponemos que se realizan una cantidad prefijada $N_{it}$ de itereaciones, aunque también es posible usar otros criterios de parada.
 
 \begin{algorithm}[H]\label{algo:general_EM}
 
     Elegir valor inicial $\gv\theta_0$:\
 
-    \For{$t=0, 1, ..., $}{
+    \For{$t=0, 1, ..., N_{it} $}{
         E-step: \
             Computar $\mathcal{Q}(\gv\theta, \gv\theta_t) = E_{\gv\theta_t}[\log p(\v X, \v Y; \gv\theta)| \v Y]$
 
@@ -114,7 +114,44 @@ y buscamos estimar $\gv\theta = (\v Q, \v R)$, las matrices de covarianzas del e
 Por otro lado, la ecuación \ref{eq:null_elbo_grad}, para el caso Gaussiano tiene como solución exactamente a la cantidad $S_i$, con lo cual el \textit{M-step} no requiere ningún cómputo adicional. La verificación de que $\gv\theta = S_i$ anula al gradiente de la ELBO se puede encontar en el apéndice junto con la representación de una densidad Gaussiana multivariada como miembro de la familia exponencial.
 % TODO: apendice
 
-Las ecuaciones \ref{eq:batchEM_SQ} y \ref{eq:batchEM_SR}, nos dan fórmulas para computar sucesivas estimaciones de $\v Q$ y $\v R$ y constituyen las fórmulas principales utilizadas en \cite{Dreano2017, Tandeo2015, Pulido2019}. Sin embargo, requieren el cómputo de valores esperados condicionados a la totalidad de la ventana de observaciones, $\v y_{1:T}$. Si se cuenta con una representación de partículas de las distribuciones suavizantes $p(\v x_t | \v x_{1:T})$ para todo $t$, entonces los valores esperados se pueden aproximar con estimadores de Monte Carlo. Notablemente, el EnKS es una técnica que provee estas representaciones y que también es apropiada para sistemas con errores Gaussianos aditivos; por lo tanto es compatible con esta aplicación del EM. En el algoritmo TODO podemos encontrar la implementación de este método. 
+Las ecuaciones \ref{eq:batchEM_SQ} y \ref{eq:batchEM_SR}, nos dan fórmulas para computar sucesivas estimaciones de $\v Q$ y $\v R$ y constituyen las fórmulas principales utilizadas en \cite{Dreano2017, Tandeo2015, Pulido2019}. Sin embargo, requieren el cómputo de valores esperados condicionados a la totalidad de la ventana de observaciones, $\v y_{1:T}$. Si se cuenta con una representación de partículas de las distribuciones suavizantes $p(\v x_t | \v x_{1:T})$ para todo $t$, entonces los valores esperados se pueden aproximar con estimadores de Monte Carlo. Notablemente, el EnKS es una técnica que provee estas representaciones y que también es apropiada para sistemas con errores Gaussianos aditivos; por lo tanto es compatible con esta aplicación del EM. En el algoritmo \ref{algo:em_enks} podemos encontrar la implementación de este método.
+
+\begin{algorithm}[H]\label{algo:em_enks}
+
+    Muestrear ensamble inicial: $\{\v x_0^{a, (i)} \}_{i=1}^{N_p} \sim p(\v x_0)$ \
+
+    Elegir valor inicial $\gv\theta_0 = (\v Q_0, \v R_0)$:\
+
+    \For{$i=1, ..., N_{it}$}{
+        Computar los ensambles de pronóstico, filtrantes y suavizantes usando EnKF+EnKS con la parametrización $\gv\theta_{i-1}$ \
+            
+            \begin{align*}
+                \{ \v x_t^{f, (j)} \}_{j=1}^{N_p} &\sim p(\v x_t | \v y_{1:t-1}) \hspace{2em} \forall t=1, ..., T \\
+                \{ \v x_t^{a, (j)} \}_{j=1}^{N_p} &\sim p(\v x_t | \v y_{1:t}) \hspace{2em} \forall t=1, ..., T
+            \end{align*}
+
+        Utilizar los ensambles de pronóstico y filtrantes para computar los suavizantes mediante EnKS \
+            \begin{align*}
+                \{\v x_t^{s, (j)} \}_{j=1}^{N_p} \sim p(\v x_t | \v y_{1:T}) \hspace{2em} \forall t=1, ..., T
+            \end{align*}
+
+        \textit{E-step}: \
+
+            \begin{align*}
+                S_i^{\v Q} &= \frac{1}{T} \sum_{t=1}^{T} \frac{1}{N_p} \sum_{j=1}^{N_p} (\v x_t^{s, (j)} - \mathcal{M}_t(\v x_{t-1}^{s, (j)}))(\v x_t^{s, (j)} - \mathcal{M}_t(\v x_{t-1}^{s, (j)}))^T \\
+                S_i^{\v R} &= \frac{1}{T} \sum_{t=1}^{T} \frac{1}{N_p} \sum_{j=1}^{N_p} (\v y_t - \mathcal{H}_t(\v x_t^{s, (j)}))(\v y_t - \mathcal{H}_t(\v x_t^{s, (j)}))^T
+            \end{align*}
+
+        \textit{M-step}: \
+            Asignar nuevos parámetros $\gv\theta_i = (\v Q_i, \v R_i)$ \
+            \begin{align*}
+                \v Q_i &= S_i^{\v Q} \\
+                \v R_i &= S_i^{\v R}
+            \end{align*}
+
+    }
+\caption{EM-EnKS}
+\end{algorithm}
 
 
 \subsection{Online EM} \label{sec:onlineEM}
