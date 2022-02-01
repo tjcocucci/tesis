@@ -27,7 +27,7 @@ Aquí damos una solución para la ecuación \ref{eq:null_elbo_grad} en el caso G
     \nabla_{\gv\theta} \psi(\gv\theta) \cdot S - \nabla_{\gv\theta} A(\gv \theta) &= 0 \\
     -\frac{1}{2} \nabla_{\gv\Sigma}  (\v x- \gv\mu)^T \gv\Sigma^{-1}(\v x-\gv\mu) - \nabla_{\gv\Sigma} \frac{1}{2} \log |\gv\Sigma| &= 0 \\
     \frac{1}{2} \gv\Sigma^{-1} (\v x- \gv\mu)(\v x-\gv\mu)^T \gv\Sigma^{-1} - \frac{1}{2} \gv\Sigma^{-1} &= 0 \\
-    \frac{1}{2} \gv\Sigma^{-1} S \gv\Sigma^{-1} - \frac{1}{2} \gv\Sigma^{-1} &= 0 \\
+    \gv\Sigma^{-1} S \gv\Sigma^{-1} - \gv\Sigma^{-1} &= 0 \\
     S &= \gv\Sigma 
 \end{align*}
 donde hemos usado la expresión $\frac{\partial \log|\v X|}{\partial \v X} = \v X^{-T}$ para la derivada del logaritmo del determinante y $\frac{\partial \v a^T \v X^{-1} \v b }{\partial \v X} = \v X^{-T} \v a \v b^T \v X^{-1}$ para la derivada de la forma cuadrática \cite{Petersen2012}.
