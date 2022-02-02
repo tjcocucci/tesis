@@ -5,7 +5,7 @@ Aquí presentamos la representación de densidades de probabilidad de la familia
 
 Se dice que una probabilidad pertenece a la familia exponencial si su densidad de probabilidad, parametrizada por $\gv\theta$ puede ser escrita como:
 $$p(\v x; \gv\theta) = h(\v x) \exp(\psi(\gv\theta) \cdot S(\v x) - A(\gv\theta))$$
-donde $S(\v x)$ es llamado el estadístico suficiente, $\psi(\gv \theta)$ la parametrización natural y $h$ y $A$ son funciones bien definidas donde es importante que $S$ sólo depende de $\v x$ y $A$ sólo depende del parámetro $\gv\theta$. \citep{Wasserman2004}.
+donde $S(\v x)$ es llamado el estadístico suficiente, $\psi(\gv \theta)$ la parametrización natural y $h$ y $A$ son funciones bien definidas \citep{Wasserman2004}. Es importante en esta representación, que la interacción entre $\v x$ y $\gv\theta$ se produce solamente a través del producto interno $\psi(\gv\theta)\cdot S(\v x)$. 
 
 La densidad de probabilidad de una Gaussiana multivariada de dimensionalidad $N$ con media $\gv\mu$ y covarianza $\gv\Sigma$ es habitualmente expresada como:
 $$p(\v x; \gv\theta) = (2\pi)^{-\frac{k}{2}} |\gv\Sigma|^{-\frac{1}{2}} \exp \{ - \frac{1}{2}(\v x- \gv\mu)^T \gv\Sigma^{-1}(\v x-\gv\mu) \}$$
