@@ -176,6 +176,82 @@ Podemos identificar entonces que los primeros $T$ términos de la suma son simia
     &= (1 - \gamma_{T+1}) \widehat{S_T} + \gamma_{T+1} E_{\gv\theta_T} [s(\v x_T, \v x_{T+1}, \v y_{T+1}) | \v y_{1:T+1}] \label{eq:onlineEM_S_rescursion}
 \end{align}
 
-Tenemos entonces una recursión que nos permite computar las aproximaciones $\widehat{S_t}$ para todo $t$ de manera recursiva en base a $S_{t-1}$, siempre y cuando contemos con una aproximación inicial $S_0$. Además introducimos $\gamma_t$ que, si bien debe valer $1/t$ para satisfacer \ref{eq:onlineEM_S_rescursion}, puede ser interpretada como una tasa de aprendizaje $\gamma_t \in (0, 1)$, tomando como inspiración técnicas de aproximación estocástica \cite{Legland1997}. Este parámetro va a controlar la ``memoria'' de los estimadores, es decir, pondera la importancia de las estimaciones anteriores respecto al nuevo térimino que incluye a la última observación. Como veremos luego este parámetro se puede calibrar para obtener comportamientos distintos del método en cuanto a convergencia. Notemos que con este esquema se puede flexibilizar la hipótesis de que los parámetros no varíán en el tiempo y podemos considerar casos en que los parámetros varíen lentamente en el tiempo. El método resultante tiene algunas similitudes con el propuesto en \cite{Cappe2009} en el que se utilize una función auxiliar, relacionada a una forma recusiva de suavizado, que permite mantener actualizaciones de $S_t$.
+Tenemos entonces una fórmula que nos permite computar las aproximaciones $\widehat{S_t}$ para todo $t$ de manera recursiva en base a $S_{t-1}$. Para iniciar la recursión es necesario que contemos con una aproximación inicial $S_0$. Además introducimos $\gamma_t$ que, si bien debe valer $1/t$ para satisfacer \ref{eq:onlineEM_S_rescursion}, puede ser interpretada como una tasa de aprendizaje $\gamma_t \in (0, 1)$, tomando como inspiración técnicas de aproximación estocástica \cite{Legland1997}. Este parámetro va a controlar la ``memoria'' de los estimadores, es decir, pondera la importancia de las estimaciones anteriores respecto al nuevo térimino que incluye a la última observación. Como veremos luego este parámetro se puede calibrar para obtener comportamientos distintos del método en cuanto a convergencia. Notemos que con este esquema se puede flexibilizar la hipótesis de que los parámetros no varíán en el tiempo y podemos considerar casos en que los parámetros varíen lentamente en el tiempo. El método resultante tiene algunas similitudes con el propuesto en \cite{Cappe2009} en el que se utiliza una función auxiliar, relacionada a una forma recusiva de suavizado, que permite mantener actualizaciones de $S_t$. Podemos ver que, a pesar de evitar un suavizado hacia atrás hasta la primera observación, el cómputo del valor esperado en \ref{eq:onlineEM_S_rescursion} implica un suavizado de un paso hacia atrás porque el estadístico $s$ depende de $\v x_T$ y el condicionamiento incluye a $\v y_{T+1}$. 
 
-Podemos ver que, a pesar de evitar un suavizado hacia atrás hasta la primera observación, el cómputo del valor esperado en \ref{eq:onlineEM_S_rescursion} implica un suavizado de un paso hacia atrás porque el estadístico $s$ depende de $\v x_T$ y el condicionamiento incluye a $\v y_{T+1}$. De acuerdo a como se compute o aproxime este valor esperado tendremos distintas implementaciones del método. En particular daremos dos posibles formas de aproximar este valor con Monte Carlo. El primero de los métodos está basado en \textit{importance sampling} y está pensado para ser acoplado a filtros de partículas. La elección de la distribución de importancia evita hacer un paso de suavizado explícito. El segundo se basa en EnKF y agrega un paso hacia atrás de suavizado de manera explícita usando EnKS.
+En el algoritmo \ref{algo:onlineEM} se esquematiza el procedimiento de manera general. Notemos que no consideramos una ventana finita de observaciones porque potencialmente se puede seguir iterando a medida que nuevos datos se hacen disponibles. Por otro lado, no hacemos suposiciones sobre los valores iniciales pero sería natural tomar $S_0$ y $\gv\theta_0$ tales que satisfagan \ref{eq:null_elbo_grad}.
+
+\begin{algorithm}[H]\label{algo:onlineEM}
+    
+    Elegir valor inicial para el parámetro, $\gv\theta_0$ y el estadístico, $S_0$: \
+    
+    \For{$t = 1, 2, ...$}{
+        
+        \textit{E-step}: \
+        
+        $\hspace{2em}\widehat{S_{t}} = (1 - \gamma_{t}) \widehat{S_{t-1}} + \gamma_{t} E_{\gv\theta_{t-1}} [s(\v x_{t-1}, \v x_t, \v y_t) | \v y_{1:t}] $ \
+        
+        \textit{M-step}: \
+        
+        Definir $\gv\theta_t$ como el valor de $\gv\theta$ que solucione: \
+        
+        $\hspace{2em}\nabla_{\gv\theta} \psi(\gv\theta) \cdot \widehat{S_t} - \nabla_{\gv\theta}A(\gv\theta) = 0$ \
+        }
+        \caption{EM \textit{online}}
+\end{algorithm}
+
+De acuerdo a como se compute o aproxime el valor esperado
+\begin{align}
+    E_{\gv\theta_{t-1}} [s(\v x_{t-1}, \v x_t, \v y_t) | \v y_{1:t}] = \int p(\v x_{t-1}, \v x_t| \v y_{1:t} ; \gv\theta_{t-1}) s(\v x_{t-1}, \v x_t, \v y_t) d\v x_{t-1:t} \label{eq:onlineEM_expected}
+\end{align}
+tendremos distintas implementaciones del método. En particular daremos dos posibles formas de aproximar este valor con Monte Carlo. El primero de los métodos está basado en muestreo de importancia y está pensado para ser acoplado a filtros de partículas. La elección de la distribución de importancia evita hacer un paso de suavizado explícito. El segundo se basa en EnKF y agrega un paso hacia atrás de suavizado de manera explícita usando EnKS. 
+
+\subsubsection*{EM \textit{online} con muestreo de importancia} \label{sec:onlineEM_IS}
+
+Para elegir una distribución de importancia conveniente para aproximar \ref{eq:onlineEM_expected} primero desarrollaremos $p(\v x_{t-1}, \v x_t| \v y_{1:t}; \gv\theta_{t-1})$ de la siguiente manera, quitando la dependencia de $\gv\theta_{t-1}$ para mayor claridad:
+\begin{align}
+    p(\v x_{t-1}, \v x_t| \v y_{1:t}) &= p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) \frac{p(\v y_t | \v x_t)}{p(\v y_t | \v y_{1:t-1})} \label{eq:IS_factorization}
+\end{align}
+En la factorización (desarrollada con mayor detalle en el apéndice \ref{}) podemos reconocer al modelo de transición y observacional, a la probabilidad filtrante a tiempo $t-1$ y a la cantidad $p(\v y_t | \v y_{1:t-1})$ que suele ser llamada verosimilitud marginalizada y que no depende de las variables de integración $\v x_{t-1}$ y $\v x_t$. Para aproximar entonces \ref{eq:onlineEM_expected} con muestreo de importancia debemos tener muestras de ambas variables de integración. En lugar de muestrear directamente de $p(\v x_{t-1}, \v x_t| \v y_{1:t})$ \ref{eq:IS_factorization} sugiere que podemos muestrear de $p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1})$ y obtener pesos proporcionales a $p(\v y_t | \v x_t)$ y, mientras que nos aseguremos de normalizaizar los pesos, no debemos preocuparnos por la verosimilitud marginal. Esto es conveniente porque disponemos del modelo observacional, $p(\v y_t | \v x_t)$ para evaluar los pesos. Además, como cualquier técnica de filtrado por ensambles produce muestras de la distribución filtrante ya disponemos de las partículas correspondientes a $\v x_{t-1}$ y para obtener las de $\v x_t$ podemos utilizar el modelo de transición.
+% TODO: apéndice
+
+Si estamos utilizando un método por ensambles de $N_p$ partículas, podemos utilizar nuestra muestra de la ditribución filtrante,
+\begin{align*}
+    \{ \v x_{t-1}^{a, (j)}\}_{j=1}^{N_p} \sim p(\v x_{t-1} | \v y_{1:t-1} ; \gv\theta_{t-1})
+\end{align*}
+y en base a cada partícula de esta muestra obtener otra, cuyo tamaño denominamos $M_p$, correspondiente a $\v x_t$:
+\begin{align*}
+    \{ \v x_{t}^{f, (j,l)}\}_{l=1}^{M_p} \sim p(\v x_t | \v x_{t-1}^{a, (j)} ; \gv\theta_{t-1})
+\end{align*}
+Estas últimas $N_p M_p$ partículas llevan el superíndice $f$ pues se obtienen de la misma manera en que se obtendría un pronóstico (\textit{forecast}) pero haciendo la salvedad de que tenemos $M_p$ partículas por cada punto del tiempo anterior. Con estas muestras podemos ya calcular los pesos no normalizados,
+\begin{align*}
+    \bar{w_{j,l}} = p(\v y_t | \v x_t^{(j,l)})
+\end{align*}
+y una vez que obtenemos las versiones normalizadas, $w_{j,l}$ podemos hacer la aproximación de Monte Carlo de la integral:
+\begin{align*}
+    E_{\gv\theta_{t-1}} [s(\v x_{t-1}, \v x_t, \v y_t) | \v y_{1:t}] \approx \sum_{j=1}^{N_p} \sum_{l=1}^{M_p} w_{j, l} s(\v x_{t-1}^{a, (j)}, \v x_{t}^{f, (j,l)}, \v y_t)
+\end{align*}
+
+Este método puede ser implementado con cualquier técnica de asimilación de datos por ensambles ya que solo necesitamos: una representación de partículas filtrante, evaluar el modelo observacional ($p(\v y_t | \v x_t)$) y muestrear del modelo de transición ($p(\v x_t | \v x_{t-1})$), es decir evolucionar el modelo hacia adelante. Por lo tanto, la metodología es compatible con EnKF y filtros de partículas. Notemos también que  es posible tomar $M_p = 1$ pues esto es equivalente a muestrear $(\v x_{t-1}, \v x_t)$ de manera conjunta de la distribución $p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) = p(\v x_t, \v x_{t-1} | \v y_{1:t-1})$. El algoritmo \ref{algo:onlineEM_IS} especifica el método.
+
+\begin{algorithm}[H]\label{algo:onlineEM_IS}
+
+    Muestrear partículas iniciales: $\{\v x_0^{(j)}\}_{j=1}^{N_p} \sim p(\v x_0)$ \\
+    Elegir valor inicial para el parámetro, $\gv\theta_0$ y el estadístico, $\widehat{S_0}$: \\
+
+    \For{$t = 1, 2, ...$}{
+    Calcular pesos:\\
+    \For{$j=1, ..., N_p$}{
+        \For{$l=1, ..., M_p$}{
+                $\v x_{t}^{f(j,l)} \sim p(\v x_{t} | \v x_{t-1}^{a(j)};\gv\theta_{t-1})$ \\
+                $w_{j,l} \propto p(\v y_{t} | \v x_{t}^{f(j,l)} ; \gv\theta_{t-1})$
+        }
+    }
+    Muestrear partículas filtrantes:\\
+    $\hspace{2em}\{\v x_{t}^{a(j)}\}_{j=1}^{N_p}  \sim p(\v x_{t} | \v y_{1:t};\gv\theta_{t-1})$\\
+    Computar $\widehat{S_t}$: \\
+    $\hspace{2em}\widehat{S_{t}} = (1 - \gamma_{t}) \widehat{S_{t-1}} + \gamma_{t} \sum_{j=1}^{N_p} \sum_{l=1}^{M_p} w_{j, l} s(\v x_{t-1}^{a, (j)}, \v x_{t}^{f, (j,l)}, \v y_t) $ \\
+    Definir $\gv\theta_t$ como el valor de $\gv\theta$ que solucione: \\
+    $\hspace{2em}\nabla_{\gv\theta} \psi(\gv\theta) \cdot \widehat{S_t} - \nabla_{\gv\theta}A(\gv\theta) = 0$
+    }
+\caption{EM \textit{online} con muestreo de importancia}
+\end{algorithm}
