@@ -206,7 +206,7 @@ y en base a cada partícula de esta muestra obtener otra, cuyo tamaño denominam
 \end{align*}
 Estas últimas $N_p M_p$ partículas llevan el superíndice $f$ pues se obtienen de la misma manera en que se obtendría un pronóstico (\textit{forecast}) pero haciendo la salvedad de que tenemos $M_p$ partículas por cada punto del tiempo anterior. Con estas muestras podemos ya calcular los pesos no normalizados,
 \begin{align*}
-    \bar{w_{j,l}} = p(\v y_t | \v x_t^{(j,l)})
+    \overline{w_{j,l}} = p(\v y_t | \v x_t^{(j,l)})
 \end{align*}
 y una vez que obtenemos las versiones normalizadas, $w_{j,l}$ podemos hacer la aproximación de Monte Carlo de la integral:
 \begin{align*}
@@ -219,17 +219,16 @@ Este método puede ser implementado con cualquier técnica de asimilación de da
 
     Muestrear partículas iniciales: $\{\v x_0^{(j)}\}_{j=1}^{N_p} \sim p(\v x_0)$ \\
     Elegir valor inicial para el parámetro, $\gv\theta_0$ y el estadístico, $\widehat{S_0}$: \\
-
     \For{$t = 1, 2, ...$}{
     Calcular pesos:\\
     \For{$j=1, ..., N_p$}{
         \For{$l=1, ..., M_p$}{
-                $\v x_{t}^{f(j,l)} \sim p(\v x_{t} | \v x_{t-1}^{a(j)};\gv\theta_{t-1})$ \\
-                $w_{j,l} \propto p(\v y_{t} | \v x_{t}^{f(j,l)} ; \gv\theta_{t-1})$
+                $\v x_{t}^{f, (j,l)} \sim p(\v x_{t} | \v x_{t-1}^{a, (j)};\gv\theta_{t-1})$ \\
+                $w_{j,l} \propto p(\v y_{t} | \v x_{t}^{f, (j,l)} ; \gv\theta_{t-1})$
         }
     }
     Muestrear partículas filtrantes:\\
-    $\hspace{2em}\{\v x_{t}^{a(j)}\}_{j=1}^{N_p}  \sim p(\v x_{t} | \v y_{1:t};\gv\theta_{t-1})$\\
+    $\hspace{2em}\{\v x_{t}^{a, (j)}\}_{j=1}^{N_p}  \sim p(\v x_{t} | \v y_{1:t};\gv\theta_{t-1})$\\
     Computar $\widehat{S_t}$: \\
     $\hspace{2em}\widehat{S_{t}} = (1 - \gamma_{t}) \widehat{S_{t-1}} + \gamma_{t} \sum_{j=1}^{N_p} \sum_{l=1}^{M_p} w_{j, l} s(\v x_{t-1}^{a, (j)}, \v x_{t}^{f, (j,l)}, \v y_t) $ \\
     Definir $\gv\theta_t$ como el valor de $\gv\theta$ que solucione: \\
@@ -237,3 +236,46 @@ Este método puede ser implementado con cualquier técnica de asimilación de da
     }
 \caption{EM \textit{online} con muestreo de importancia}
 \end{algorithm}
+
+\subsubsection*{EM \textit{online} con un paso de suavizado} \label{sec:onlineEM_OSS}
+
+% TODO: EnKS en cap de asimilación de datos
+
+Otra alternativa para obtener una aproximación de Monte Carlo de \ref{eq:onlineEM_expected} es muestrear directamente de $p(\v x_{t-1}, \v x_t| \v y_{1:t})$ para lo cual es necesario obtener la versión suavizada del estado a tiempo $t-1$. El EnKF puede proveernos las partículas correspondientes a $p(\v x_t | \v y_{t-1})$ mientras que podemos obtener una muestra de $p(\v x_{t-1} | \v y_{1:t})$ mediante el EnKS, presentado en \ref{}. Notemos además que no es necesario iterar con el EnKS hasta la primera observación sino que basta con hacer un solo paso hacia atrás pues sólo no estamos interesados en las partículas que coresponden a tiempos anteriores a $t-1$. De esta manera, muestreamos:
+\begin{align*}
+    \{\v x_t^{a, (j)}\}_{j=1}^{N_p} &\sim p(\v x_t | \v x_{1:t}) \\
+    \{\v x_t^{s, (j)}\}_{j=1}^{N_p} &\sim p(\v x_{t-1} | \v x_{1:t})
+\end{align*}
+donde las partículas suavizantes pueden ser obtenidas del ensamble de pronóstico y el filtrante utilizando las siguientes expresiones:
+\begin{align*}
+    \v K_{t-1}^s &= \v S_{t-1}^a ( {\v S_t^f}^T \v S_t^f )^{-1} {\v S_t^f}^T \\
+    \v x_{t-1}^{j, (s)} &= \v x_{t-1}^{j, (s)} + \v K_{t-1}^s (\v x_t^{j, (s)} - \v x_t^{j, (f)})
+\end{align*}
+Notemos que, cuando $\v y_t$ es la última observación disponible, la distribución filtrante coincide con la suavizante a ese tiempo y por lo tanto $\v x_t^{s, (j)} = \v x_t^{a, (j)}$. La aproximación de Monte Carlo resulta entonces en:
+\begin{align*}
+    E_{\gv\theta_{t-1}} [s(\v x_{t-1}, \v x_t, \v y_t) | \v y_{1:t}] \approx \sum_{j=1}^{N_p} s(\v x_{t-1}^{s, (j)}, \v x_{t}^{a, (j)}, \v y_t)
+\end{align*}
+y la meteodología puede ser entonces expresada en forma algorítmica como se expone en \ref{algo:onlineEM_OSS}.
+
+\begin{algorithm}[H]\label{algo:onlineEM_OSS}
+    
+    Muestrear partículas iniciales: $\{\v x_0^{(j)}\}_{j=1}^{N_p} \sim p(\v x_0)$ \\
+    Elegir valor inicial para el parámetro, $\gv\theta_0$ y el estadístico, $\widehat{S_0}$: \\
+    \For{$t = 1, 2, ...$}{
+        Computar partículas filtrantes y suavizantes utilizando EnKF+EnKS:\\
+    $\hspace{2em}\{\v x_t^{a, (j)}\}_{j=1}^{N_p} \sim p(\v x_t | \v y_{1:t};\gv\theta_{t-1})$ \\
+    $\hspace{2em}\{\v x_{t-1}^{s, (j)}\}_{j=1}^{N_p} \sim p(\v x_{t-1} | \v y_{1:t};\gv\theta_{t-1})$ \\
+    Computar $\widehat{S_t}$: \\
+    $\hspace{2em}\widehat{S_{t}} = (1 - \gamma_{t}) \widehat{S_{t-1}} + \gamma_{t} \frac{1}{N_p}\sum_{j=1}^{N_p} s(\v x_{t-1}^{s, (j)}, \v x_{t}^{a, (j)}, \v y_t) $ \\
+    Definir $\gv\theta_t$ como el valor de $\gv\theta$ que solucione: \\
+    $\hspace{2em}\nabla_{\gv\theta} \psi(\gv\theta) \cdot \widehat{S_t} - \nabla_{\gv\theta}A(\gv\theta) = 0$
+    }
+    \caption{EM \textit{online} con suavizado de un paso}
+\end{algorithm}
+No especificamos que implementación de EnKF o EnKS utilizamos porque potencialmente podemos elegir la que resulte más conveniente. Al estar basado en el filtro de Kalman por ensambles, valen los requerimientos usuales para dicho método, es decir errores aditivos Gaussianos en el modelo de transición y observacional. Si consideramos que en el caso Gaussiano, el estadístico suficiente 
+se puede expresar como $s(\v x_{t-1}, \v x_t, \v y_{1:t}) = (s^Q(\v x_{t-1}, \v x_t), s^R(\v y_t, \v x_t))$ donde
+\begin{align*}
+    s^Q(\v x_{t-1}, \v x_t) &= (\v x_t - \mathcal{M}_t(\v x_{t-1}))(\v x_t - \mathcal{M}_t(\v x_{t-1}))^T \\
+    s^R(\v y_t, \v x_t) &= (\v y_t - \mathcal{Y}_t(\v x_t))(\v y_t - \mathcal{H}_t(\v x_t))^T
+\end{align*}
+podemos ver la similaridad entre este método y el EM-EnKS presentado en el algoritmo \ref{algo:em_enks}. Sin embargo, si aplicaramos  la versión \textit{online} a una ventana de tiempo $t = 1, ..., T$, podemos ver que este realiza aproximadamente la misma cantidad de operaciones en total que una única iteración de la versión \textit{offline}. De hecho, el EM \textit{online} requerirá $T$ pasos temporales de EnKF y $T$ pasos simples (de una sola observación) hacia atrás de EnKS: esto es equivalente al pase completo de EnKF+EnKS en la versión \textit{batch}. Por otro lado, la cantidad de evaluaciones de $s$ en el pase completo de la versión \textit{online} es $N_p \times T$, lo cual coincide con una única iteración del \textit{offline}.
