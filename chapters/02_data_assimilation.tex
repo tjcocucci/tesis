@@ -27,7 +27,21 @@ Notemos además que la ecuación \ref{eq:transition} determina una probabilidad 
 Si no hacemos suposiciones sobre el modelo $\mathcal{M}$ es difícil saber cual será el efecto de la propagación hacia adelante, incluso si la distribución inicial de $\v x_0$ es sencilla. Modelos no lineales de baja dimensionalidad pueden llevar a que una distribución inicial gaussiana resulte multimodal al ser evolucionada hacia adelante. 
 
 \paragraph{Ejemplo Lorenz 63}
-% TODO
+
+Si tomamos el modelo Lorenz-63 de 3 dimensiones \citep{Lorenz1963}, determinado por las ecuaciones, 
+\begin{empheq}[left = \empheqlbrace]{align}
+    \frac{\partial x}{\partial t} &= \sigma (x - y)\\
+    \frac{\partial y}{\partial t} &= x (\rho - x) - y\\
+    \frac{\partial z}{\partial t} &= xy- \beta z
+\end{empheq}
+y consideremos que $\mathcal{M}_t$ consiste en la integración temporal de este modelo. Las no-linealidades que tiene son suficientes para causar que se pierda la Gaussianidad de manera muy evidente. Integramos 100 puntos muestreados de una distribucuón normal durante 100 pasos de tiempo de longitud 0.01 y en la figura \ref{fig:lor63_non_gauss} se pueden ver las trayectorias proyectadas sobre el plano $xy$. Se puede ver que la distribución de los puntos luego de la aplicación del modelo es claramente bimodal. Este ejemplo exagera el efecto puesto que permite una integración muy larga del modelo sin hacer ninguna restricción, pero si observamos la manera en que se separan las trayectorias se hace evidente que la Gaussianidad se puede perder rápidamente en situaciones de no linealidad.
+\begin{figure}[h]
+    \captionsetup{width=0.5\textwidth}
+    \centering
+    \includegraphics[width=0.75\textwidth]{example_codes/lor63_non_gauss.pdf}
+    \caption{Trayectorias del modelo Lorenz-63. Los puntos iniciales (rojos) y finales (azules) están representados con un mayor tamaño que los intermedios.}
+    \label{fig:lor63_non_gauss}
+\end{figure}
 
 \subsection{Modelo de Markov escondido}
 
