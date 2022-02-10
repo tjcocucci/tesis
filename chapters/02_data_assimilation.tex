@@ -36,7 +36,6 @@ Si tomamos el modelo Lorenz-63 de 3 dimensiones \citep{Lorenz1963}, determinado 
 \end{empheq}
 y consideremos que $\mathcal{M}_t$ consiste en la integración temporal de este modelo. Las no-linealidades que tiene son suficientes para causar que se pierda la Gaussianidad de manera muy evidente. Integramos 100 puntos muestreados de una distribucuón normal durante 100 pasos de tiempo de longitud 0.01 y en la figura \ref{fig:lor63_non_gauss} se pueden ver las trayectorias proyectadas sobre el plano $xy$. Se puede ver que la distribución de los puntos luego de la aplicación del modelo es claramente bimodal. Este ejemplo exagera el efecto puesto que permite una integración muy larga del modelo sin hacer ninguna restricción, pero si observamos la manera en que se separan las trayectorias se hace evidente que la Gaussianidad se puede perder rápidamente en situaciones de no linealidad.
 \begin{figure}[h]
-    \captionsetup{width=0.5\textwidth}
     \centering
     \includegraphics[width=0.75\textwidth]{example_codes/lor63_non_gauss.pdf}
     \caption{Trayectorias del modelo Lorenz-63. Los puntos iniciales (rojos) y finales (azules) están representados con un mayor tamaño que los intermedios.}
@@ -57,7 +56,7 @@ El modelo propuesto por las ecuaciones \ref{eq:transition} y \ref{eq:observation
     \end{align*}
 \end{enumerate}
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}[node distance=3.5cm, auto]
         \tikzset{decision/.style={diamond, draw, fill=blue!20, text badly centered,  node distance=2.5cm, inner sep=0pt,align=center}}
@@ -150,8 +149,48 @@ donde $\v K_t = \v P_t^f \v H_t^T(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se de
 
 Notemos que la media de los pronósticos es tan solo la propagación hacia adelante de la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación. 
 
-\paragraph{Ejemplo unidimensional}
-% TODO
+\paragraph{Ejemplo: oscilador armónico}
+Consideramos aquí un sencillo modelo de un oscilador armónico y ejemplificamos cómo usar el filtro de Kalman. Estos sistemas se pueden modelar con la siguiente ecuación diferencial:
+\begin{align*}
+    \frac{\partial^2 x}{\partial t} &= -\omega^2 x(t)
+\end{align*}
+donde $\omega$ es la frecuencia angular. Podemos considerar un integrador numérico de Euler semi-implícito para la posición $x$ y la velocidad $v$ en tiempo discretizado a intervalos de longitud $dt$, con lo que obtenemos:
+\begin{align*}
+    x_t &= (1 - \omega^2 dt^2) x_{t-1} + v_{t-1} dt \\
+    v_t &= v_{t-1} - \omega^2 x_{t-1} dt
+\end{align*}
+que constituye un sistema lineal que permite la expresión:
+\begin{align*}
+\underbrace{\begin{pmatrix*}
+        x_t \\
+        v_t
+    \end{pmatrix*}}_{\v x_t} = 
+\underbrace{\begin{pmatrix*}
+        1 - \omega^2 dt^2 & dt \\
+        -\omega^2 dt & 1
+    \end{pmatrix*}}_{\v M_t} \cdot
+\underbrace{\begin{pmatrix*}
+        x_{t-1} \\
+        v_{t-1}
+    \end{pmatrix*}}_{\v x_{t-1}}
+\end{align*}
+Adicionalmente podemos incorporar al modelo ruido Gaussiano aditivo constante $\gv\eta_t \sim \mathcal{N}(\v 0, \v Q)$ para obtener una expresión como \ref{eq:kf_forward}. Para el modelo observacional consideraremos que sólo obtenemos datos de la posición utilizando la matriz $\v H_t = (0, 1)$ y que estos datos tienen error aditivo $\gv\nu_t \sim \mathcal{N}(\v 0, \v R)$.
+
+Simulamos entonces una trayectoria que consideramos la trayectoria verdadera y de esta obtenemos las observaciones. Utilizando el filtro de Kalman podemos intentar estimar la trayectoria real a través de la asimilación de los datos simulados. En la figura \ref{fig:KF_harmonic_oscillator} podemos ver las trayectorias reales (que no tienen amplitud constante debido al error introducido por $\gv\eta$) y las estimaciones de las medias del filtro. Estas son naturalmente más precisas para la variable observada, sin embargo las correlaciones entre las observaciones y las variables no observadas que utiliza el filtro permiten un seguimiento aproximado de la variable. Es importante señalar que el filtro de Kalman no produce solo una estimación de las medias sino que provee una medida de la incerteza mediante estimaciones de las varianzas. En la figura \ref{fig:KF_bayes} se representan las densidades de probabilidad del pronóstico y del análisis junto con la verosimilitud de la observación para un tiempo fijo que corresponde a la línea de corte vertical del panel superior de la figura \ref{fig:KF_harmonic_oscillator}. El pronóstico actúa como una probabilidad \textit{a priori} que se combina con la verosimilitud, mediante la regla de Bayes que subyace al análisis del filtro de Kalman, para conformar la distribución \textit{a posteriori} que corresponde al análisis. La estimación del análisis mejora al pronóstico utilizando la observación. Además, la incerteza del análisis es menor a la del pronóstico y a la de la observación, lo cual es una propiedad que se hereda de la regla de Bayes.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{example_codes/KF_harmonic_oscillator.eps}
+    \caption{Trayectorias reales y estimadas mediante el filtro de Kalman. Sólo la posición es observada}
+    \label{fig:KF_harmonic_oscillator}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{example_codes/KF_bayes.eps}
+    \caption{Funciones de densidad de probabilidad filtrante y de pronóstico junto a la verosimilitud de la observación y el valor real. Corresponde al tiempo indicado por el corte vertical en la figura \ref{fig:KF_harmonic_oscillator}}
+    \label{fig:KF_bayes}
+\end{figure}
 
 \section{Métodos variacionales}
 

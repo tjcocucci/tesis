@@ -119,9 +119,9 @@ likelihood[likelihood < 0.001] = np.nan
 print(st.norm(xa[0, cut], Pa[0, 0, cut]).isf(0.999))
 print(st.norm(xa[0, cut], Pa[0, 0, cut]).pdf(st.norm(xa[0, cut], Pa[0, 0, cut]).ppf(0.999)))
 
-ax.plot(xgrid, xa_pdf, color='tab:blue', label=r'pdf filtrante: $p(x_t | y_{1:t})$')
+ax.plot(xgrid, xa_pdf, color='tab:blue', label=r'Densidad filtrante: $p(x_t | y_{1:t})$')
 ax.plot(xa[0, cut], 0, color='tab:blue', marker='o', ms=5, ls='None', label='Media análisis', zorder=100)
-ax.plot(xgrid, xf_pdf, color='tab:olive', label=r'pdf del pronóstico: $p(x_t | y_{1:t-1})$')
+ax.plot(xgrid, xf_pdf, color='tab:olive', label=r'Densidad del pronóstico: $p(x_t | y_{1:t-1})$')
 ax.plot(xf[0, cut], 0, color='tab:olive', marker='o', ms=5, ls='None', label='Media pronóstico', zorder=100)
 ax.plot(xgrid, likelihood, color='tab:red', label=r'Verosimilitud observacional: $p(y_t | x_t)$')
 ax.plot(y[0, cut], 0, color='tab:red', marker='o', ms=5, ls='None', label='Observación', zorder=100)
