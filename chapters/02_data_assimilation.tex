@@ -354,6 +354,20 @@ Por otro lado, hay que notar que estamos utilizando sobre cada partícula la fó
 
 Notemos que la suposición de que el modelo de transición es lineal es la suposición que permite asumir que evolucionar los miembros del ensamble hacia adelante va a conservar la Gaussianidad de la muestra. Sin embargo, a diferencia del filtro de Kalman tradicional, no precisamos una expresión matricial $\v M_t$ del operador. El modelo se usa solamente para propagar las partículas hacia adelante por lo cual podemos relajar la hipótesis de linealidad y pensar en un operador general $\mathcal{M}_t$ que si es levemente no lineal podrá preservar la Gaussianidad en los pronósticos y que además puede ser tratado como una caja negra. De hecho, el EnKF es habitualmente presentado como un método apto para modelos no lineales.
 
+Además del filtro, existe la posibilidad de obtener representaciones de ensambles de las distribuciones suavizantes utilizando el llamado suavizador de Kalman por ensambles (EnKS). Así como el EnKF se basa en los pasos de predicción y análisis del pase hacia adelante del algoritmo \textit{forward-backward}, la versión del EnKS conocida como Rauch-Tung-Striebel (RTS) consiste en un pase hacia atrás. En el algoritmo \ref{algo_enks} muestra el método como es sugerido en \cite{Cosme2012}. Notablemente, la metodología se vale solamente de los ensambles de pronóstico y filtrantes producidos por el EnKF por lo que no se necesitan evaluaciones del modelo o del operador observacional. Las partículas suavizantes a tiempo $t$ son computadas como una corrección de las del análisis en las que se incorpora secuencialmente la información de los ensambles aa tiempo $t+1$ mediante la pondereación de una matriz de ganancia $\v K_t^s$. Esta ganancia se computa utilizando $\v S_t^a$ y $\v S_{t+1}^f$ las cuales son matrices cuyas columnas son los miembros de los ensambles $\{\v x_{t+1}^{f, (i)}\}_{t=1}^{N_p}$ y  $\{\v x_t^{a, (i)}\}_{t=1}^{N_p}$ respectivamente, centrados en su media.
+
+\begin{algorithm}[H]\label{algo:enks}
+    Definir: $\{\v x_T^{s, (i)} \}_{i=1}^{N_p} = \{\v x_T^{a, (i)} \}_{i=1}^{N_p}$
+    
+    \For{$t=T-1, ..., 1$}{
+        $\v K_t^s = \v S_t^a ((\v S_{t+1}^f)^T \v S_{t+1}^f)^{-1}(\v S_{t+1}^f)^T$ \\
+        \For{$i=1, ..., N_p$} {
+            $\v x_t^{s, (i)} = \v x_t^{a, (i)} + \v K_t^s (\v x_{t+1}^{s, (i)} - \v x_{t+1}^{f, (i)})$
+        }
+    }
+\caption{EnKS}
+\end{algorithm}
+
 % TODO: mejorar este párrafo?
 El EnKF que presentamos es solamente una implementación sencilla de esta idea pero la realidad es que existe una gran familia de filtros de Kalman por ensambles desarrollados para diferentes tipos de problemas. Los filtros de raíz cuadrada (EnSRF) y los filtros de Kalman por ensambles ajustados (EAKF) sortean necesidad de perturbar las observaciones, lo cual puede causar subestimación de covarianzas \citep{Whitaker2002, Anderson2001}. Los filtros transformados (ETKF) operan sobre el espacio generado por lso miembros del ensamble y consiguen una mejor eficiencia \citep{Bishop2001}.
 
