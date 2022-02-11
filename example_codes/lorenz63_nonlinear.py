@@ -2,22 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats
 from scipy.integrate import odeint
-
-rho = 28.0
-sigma = 10.0
-beta = 8.0 / 3.0
+from lor63 import dxdt
 
 Np = 100
 
 np.random.seed(200)
-
-def dxdt(state, t):
-    x, y, z = state
-    dx = np.zeros(state.shape[0])
-    dx[0] = sigma * (y - x)
-    dx[1] = x * (rho - z) - y
-    dx[2] = x * y - beta * z
-    return dx
 
 state0_mean = np.array([1.0, 1.0, 1.0])*0.05
 state0_var = np.eye(3)*1
