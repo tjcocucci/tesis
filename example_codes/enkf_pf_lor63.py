@@ -54,22 +54,25 @@ nit = 50
 xf_vmpf, xa_vmpf = vmpf(nit, y, x0_ens, f, f_no_noise, Q, R, H)
 
 fig, ax = plt.subplots(3, 1, sharex=True)
-for i in range(ne):
-    ax[0].plot(xa_enkf[1, i, :], '0.5')
-ax[0].plot(xt[1, :], 'k--')
-ax[0].plot(y[1, :], 'r.')
-ax[0].plot(xa_enkf[1, :, :].mean(0), 'b')
+plt.subplots_adjust(hspace=0.1)
 
-for i in range(ne):
-    ax[1].plot(xa_pf[1, i, :], '0.5')
-ax[1].plot(xt[1, :], 'k--')
-ax[1].plot(y[1, :], 'r.')
-ax[1].plot(xa_pf[1, :, :].mean(0), 'b')
+for j, ens in enumerate([xa_enkf, xa_pf, xa_vmpf]):
+    if j == 2:
+        legends = ['Valor real', 'Observaciones', 'Media del ensamble', 'Partículas']
+        ax[j].set_xlabel('t')
+    else:
+        ax[j].tick_params(axis='x', bottom=False)
+        legends = [None]*4
+    ax[j].plot(xt[1, :], 'k--', label=legends[0], zorder=1000)
+    ax[j].plot(y[1, :], 'r.', label=legends[1], zorder=1000)
+    ax[j].plot(ens[1, :, :].mean(0), 'b', label=legends[2], zorder=1000)
+    for i in range(ne):
+        ax[j].plot(ens[1, i, :], '0.5', label=legends[3] if i == 0 else None)
+        
+    ax[j].set_ylabel('x')
 
-for i in range(ne):
-    ax[2].plot(xa_vmpf[1, i, :], '0.5')
-ax[2].plot(xt[1, :], 'k--')
-ax[2].plot(y[1, :], 'r.')
-ax[2].plot(xa_vmpf[1, :, :].mean(0), 'b')
+fig.legend(framealpha=1, ncol=2)
+
+
 
 plt.show()

@@ -26,13 +26,15 @@ Notemos además que la ecuación \ref{eq:transition} determina una probabilidad 
 
 Si no hacemos suposiciones sobre el modelo $\mathcal{M}$ es difícil saber cual será el efecto de la propagación hacia adelante, incluso si la distribución inicial de $\v x_0$ es sencilla. Modelos no lineales de baja dimensionalidad pueden llevar a que una distribución inicial gaussiana resulte multimodal al ser evolucionada hacia adelante. 
 
-\paragraph{Ejemplo Lorenz 63}
+\paragraph{Ejemplo Lorenz-63}
 
 Si tomamos el modelo Lorenz-63 de 3 dimensiones \citep{Lorenz1963}, determinado por las ecuaciones, 
-\begin{empheq}[left = \empheqlbrace]{align}
-    \frac{\partial x}{\partial t} &= \sigma (x - y)\\
+\begin{empheq}[left=\empheqlbrace]{equation}\label{eq:lorenz63}
+    \begin{aligned}
+    \frac{\partial x}{\partial t} &= \sigma (x - y) \\
     \frac{\partial y}{\partial t} &= x (\rho - x) - y\\
     \frac{\partial z}{\partial t} &= xy- \beta z
+    \end{aligned}
 \end{empheq}
 y consideremos que $\mathcal{M}_t$ consiste en la integración temporal de este modelo. Las no-linealidades que tiene son suficientes para causar que se pierda la Gaussianidad de manera muy evidente. Integramos 100 puntos muestreados de una distribucuón normal durante 100 pasos de tiempo de longitud 0.01 y en la figura \ref{fig:lor63_non_gauss} se pueden ver las trayectorias proyectadas sobre el plano $xy$. Se puede ver que la distribución de los puntos luego de la aplicación del modelo es claramente bimodal. Este ejemplo exagera el efecto puesto que permite una integración muy larga del modelo sin hacer ninguna restricción, pero si observamos la manera en que se separan las trayectorias se hace evidente que la Gaussianidad se puede perder rápidamente en situaciones de no linealidad.
 \begin{figure}[h]
@@ -391,3 +393,21 @@ En general, los EnKFs son métodos robustos, relativamente fáciles de comprende
 \paragraph{Inflación y localización} \
 
 Los EnKFs son utilizados en escenarios de alta dimensionalidad en los que surgen una variedad de problemas. Por un lado, debido a que la cantidad de miembros de ensamble resulta pequeña en comparación con la dimensión de las variables de estado, el error de muestreo asociado puede resultar en que la matriz de covarianza predictiva $\widehat{\v P}_t^f$ esté subestimada o que tenga deficiencias de rango \citep{Miyoshi2011}. Esta situación puede estar incluso profundizada por una mala especificación del error de modelo. Esto puede provocar que la dispersión del ensamble sea muy compacta (esto se suele llamar colapso del ensambles) lo cual da como resultado que la certidumbre sobre la predicción sea mayor de lo que debería ser y por lo tanto la información observacional sea menos considerada por el sistema de asimilación de datos. Como resultado, es posible que el filtro comienze a ignorar las observaciones y diverja de la trayectoria que debería estimar. Un paliativo a esta situación es la llamada inflación de covarianza que consiste en agrandar artificialmente la covarianza predictiva \citep{Anderson1999}. Existen diversas implementaciones de esta idea pero distinguimos la inflación aditiva que consiste en añadir ruido a los miembros del ensamble y la inflación multiplicativa que en general es implementada multiplicando la matriz de covarianzas (o las desviaciones de los miembros del ensamble respecto a su media) por un escalar mayor a $1$. Para mejorar la calidad de la matriz de covarianzas predictiva, además se suele usar localización. Esta metodología consiste en reducir el valor de los términos fuera de la diagonal que correspondan a covarianzas de variables lejanas espacialmente y que por lo tanto no deberían estar muy correlacionadas. Esto se hace porque un número bajo de miembros de ensamble puede provocar correlaciones espúreas que deterioren la calidad de la matriz de covarianzas \citep{Hamill2001}. Utilizando localización se puede mitigar la deficiencia de rango y el error de muestreo. 
+
+\paragraph{Ejemplo Lorenz-63}
+
+Consideramos aquí el modelo Lorenz-63 descrito por las ecuaciones \ref{eq:lorenz63}. Generamos una trayectoria verdadera, a partir de la cual muestreamos observaciones sintéticas y luego, para intentar estimar el estado, utilizamos el EnKF, el filtro de partículas bootstrap y el VMPF. En la figura \ref{fig:enkf_pf_vmpf_lor63} se muestran las estimaciones para la primer variable $x$ con los tres métodos. Utilizamos solamente 2 partículas y se puede ver que el VMPF logra estimar las trayectorias reales, el EnKF se desincroniza en ciertos sectores de la ventana de tiempo y el filtro de partículas bootstrap diverge completamente luego de unos 30 ciclos de asimilación. Es inusual utilizar estas técnicas con tan pocas partículas pero el experimento pone en evidencia que el VMPF y el EnKF utilizan las partículas con mayor eficiencia que el filtro de partículas bootstrap. También se aprecia que en el EnKF y VMPF estas son mucho más próximas a la media mientras que las partículas del filtro bootstrap, al diverger toman trayectorias que prácticamente ignoran a las observaciones. En la figura \ref{fig:rmse_var_ensemble_based} podemos ver la raíz del error cuadrático medio (RMSE) y la varianza de los ensambles para distinto número de partículas. Notablemente, se necesitan muchas más partículas para el filtro bootstrap para lograr una performance similar a la de las otras dos metodologías. Esto se debe en parte a que los otros dos métodos transforman el ensamble de pronóstico hacia zonas de mayor verosimilitud mientras que el filtro bootstrap se limita a seleccionar y replicar las partículas del pronóstico que resulten más verosímiles.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{example_codes/enkf_pf_vmpf_lor63.eps}
+    \caption{Trayectorias reales y estimadas de $x$ mediante EnKF (arriba) filtro de partículas bootstrap (medio) y VMPF (abajo)}
+    \label{fig:enkf_pf_vmpf_lor63}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{example_codes/rmse_var_ensemble_based.eps}
+    \caption{RMSE y varianza para los tres métodos}
+    \label{fig:rmse_var_ensemble_based}
+\end{figure}
