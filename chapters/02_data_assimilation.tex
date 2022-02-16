@@ -323,7 +323,7 @@ En el trabajo de investigación de esta tesis utilizamos un filtro basado en flu
 de manera que las partículas en el pseudotiempo inicial se distribuyen como la \textit{prior} y en el pseudotiempo final obedecen a la distribución \textit{a posteriori} pasando por distribuciones intermedias $p_s$. En particular, el VMPF mueve las partículas en la dirección de máximo decenso del gradiente de la divergencia de Kullback-Leibler entre $p_s$ y la distribución objetivo. Además, para evaluar el este gradiente se considera una versión kernelizada de la divergencia de Kullback-Leibler. Esto resulta en que, discretizando el pseudotiempo, tenemos:
 \begin{align*}
     \v x_{s+1} &= \v x_s - \epsilon \nabla KL(\v x_s) \\
-    &= \v x_s - \epsilon \int p_s(\v z) (K(\v z, \v x_s) \nabla_{\v z} log(\v z | \v y) + \nabla_{\v z} K(\v z, \v x_s)) d\v z
+    &= \v x_s - \epsilon \int p_s(\v z) (K(\v z, \v x_s) \nabla_{\v z} \log p(\v z | \v y) + \nabla_{\v z} K(\v z, \v x_s)) d\v z
 \end{align*}
 donde $K$ es el kernel y la integral que representa al gradiente puede ser aproximado utilizando Monte Carlo utilizando la muestra de partículas de la distribución $p_s(\v z)$ disponible de la iteración correspondiente a pseudotiempo anterior. El método resultante tiene la cualidad de que las partículas se mueven hacia la moda de la distribución $p(\v x | \v y)$ pero la amplitud de banda del kernel actúa como una fuerza repulsiva entre las partículas \citep{Liu2016} de manera que la muestra resultante no pierde diversidad. Al utilizar una única partícula esta se dirige a la moda de la distribución objetivo, dando la estimación MAP (máximo \textit{a posteriori}) la cual, notablemente, es la que se obtiene mediante métodos variacionales como el 3DVAR.
 
