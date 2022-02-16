@@ -7,9 +7,13 @@ def bootstrap_PF_step(xf, w, y, observational_pdf, Neff_thresh=np.inf):
     # Compute weights
     w_new = np.array([observational_pdf(xf[:, i], y)
                   for i in range(ne)])
-    w_new = np.multiply(w, w_new)
-    w_new /= np.sum(w_new)
-    
+    w_new = np.multiply(w/np.max(w), w_new)
+
+    try:
+        w_new /= np.sum(w_new)
+    except:
+        w_new = np.repeat(1/ne, ne)
+
     Neff = 1/np.sum(w_new**2)
     
     # Resample

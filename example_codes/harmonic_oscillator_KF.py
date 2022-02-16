@@ -45,10 +45,18 @@ ax1.axvline(x=cut, color='0.2')
 ax1.tick_params(axis='x', bottom=False)
 ax1.set_ylabel('Posición')
 
+ax1.fill_between(np.arange(ntimes),
+    xa[0, :] + 2*np.sqrt(Pa[0, 0, :]),
+    xa[0, :] - 2*np.sqrt(Pa[0, 0, :]),
+    color='tab:blue', alpha=0.3, zorder=100)
+
 # ax2.plot(y[1, :], 'r.')
 ax2.plot(xa[1, :], color='tab:blue')
 ax2.plot(xt[1, :], 'k--')
-ax1.axvline(x=cut, color='0.5')
+ax2.fill_between(np.arange(ntimes),
+    xa[1, :] + 2*np.sqrt(Pa[1, 1, :]),
+    xa[1, :] - 2*np.sqrt(Pa[1, 1, :]),
+    color='tab:blue', alpha=0.3, zorder=100)
 
 ax2.set_xlabel('Tiempo')
 ax2.set_ylabel('Velocidad')
