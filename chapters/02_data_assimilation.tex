@@ -39,7 +39,7 @@ Si tomamos el modelo Lorenz-63 de 3 dimensiones \citep{Lorenz1963}, determinado 
 y consideremos que $\mathcal{M}_t$ consiste en la integración temporal de este modelo. Las no-linealidades que tiene son suficientes para causar que se pierda la Gaussianidad de manera muy evidente. Integramos 100 puntos muestreados de una distribucuón normal durante 100 pasos de tiempo de longitud 0.01 y en la figura \ref{fig:lor63_non_gauss} se pueden ver las trayectorias proyectadas sobre el plano $xy$. Se puede ver que la distribución de los puntos luego de la aplicación del modelo es claramente bimodal. Este ejemplo exagera el efecto puesto que permite una integración muy larga del modelo sin hacer ninguna restricción, pero si observamos la manera en que se separan las trayectorias se hace evidente que la Gaussianidad se puede perder rápidamente en situaciones de no linealidad.
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.75\textwidth]{example_codes/lor63_non_gauss.pdf}
+    \includegraphics[width=0.75\textwidth]{lor63_non_gauss.pdf}
     \caption{Trayectorias del modelo Lorenz-63. Los puntos iniciales (rojos) y finales (azules) están representados con un mayor tamaño que los intermedios.}
     \label{fig:lor63_non_gauss}
 \end{figure}
@@ -183,14 +183,14 @@ Simulamos entonces una trayectoria que consideramos la trayectoria verdadera y d
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.75\textwidth]{example_codes/KF_harmonic_oscillator.eps}
+    \includegraphics[width=0.75\textwidth]{KF_harmonic_oscillator.eps}
     \caption{Trayectorias reales y estimadas mediante el filtro de Kalman. Sólo la posición es observada}
     \label{fig:KF_harmonic_oscillator}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.75\textwidth]{example_codes/KF_bayes.eps}
+    \includegraphics[width=0.75\textwidth]{KF_bayes.eps}
     \caption{Funciones de densidad de probabilidad filtrante y de pronóstico junto a la verosimilitud de la observación y el valor real. Corresponde al tiempo indicado por el corte vertical en la figura \ref{fig:KF_harmonic_oscillator}}
     \label{fig:KF_bayes}
 \end{figure}
@@ -255,7 +255,6 @@ Esto tiene el efecto que las partículas con mayor peso estarán repetidas y las
 \end{align*}
 Este filtro de partículas que incorpora remuestreo suele ser denominado SIR (\textit{sequential importance resampling}) y lo expresamos en forma algortítmica en \ref{algo:sir_pf}.
 
-
 % TODO: Resolver asignación en algoritmos. Usar := y :~ ?
 \begin{algorithm}[H]\label{algo:sir_pf}    
     Muestrear partículas iniciales: $\{\v x_0^{(i)}\}_{i=1}^{N_p} \sim p(\v x_0)$
@@ -309,7 +308,6 @@ La elección de la distribución de transición como distribución propuesta en 
 El cómputo de los pesos está dado por la verosimilitud observacional por lo que estos cuantifican cuán afín es cada partícula a la observación. Por su parte, la forma de transformar al conjunto de partículas de pronóstico en una muestra filtrante es a través de el remuestreo. El remuestreo, al ser con reemplazo, tiene el efecto de multiplicar las partículas con pesos altos (cercanas a la observación) y eliminar las partículas con pesos bajos (lejanas a la observación). Este mecanismo se suele comparar con la selección natural, sólo sobreviven y se reproducen las partículas ``más aptas''.
 
 Como se anticipó, el remuestreo introduce otro problema: el empobrecimiento de diversidad. Esto se debe a que tendremos muchas réplicas de las partículas con más peso, es decir una muestra que cubre pobremente el espacio muestral. Este efecto es claramente indeseable y para paliarlo es habitual introducir, luego del remuestreo, un paso en el que las partículas se mutan o se mueven de alguna forma para no tener tantas partículas repetidas. El término mutación proviene de la interpretación del fitro de partículas \textit{bootstrap} como un mecanismo de selección del más apto. Esta modificación de las partículas se puede hacer incorporando pasos de MCMC. También es posible mitigar el problema mediante regularización, utilizando \textit{kernel density estimation} sobre las distribuciones empíricas \citep{Sarkka2013, Arulampalam2002, Ruchi2019}.
-% TODO: introducir sin mucho detalle filtros de flujo de langevin y VMPF
 
 La diversidad de filtros de partículas es vasta: la transformación de un conjunto de partículas que representa un pronóstico en una muestra de la probabilidad \textit{a posteriori} puede ser lograda con diversos enfoques. Existen combinaciones con ideas de filtros de Kalman, filtros que utilizan ideas de transporte óptimo para mover las partículas hacia la distribución deseada, temperado de la verosimilitud para evitar pesos muy pequeños cuando esta es muy concentrada o filtros que mueven dinámicamente las partículas mediante un flujo hacia la distribución \textit{a posteriori}. En \cite{vanLeeuwen2019} se puede encontrar un buen reporte sobre las diversas implementaciones de filtros de partículas. 
 
@@ -400,14 +398,14 @@ Consideramos aquí el modelo Lorenz-63 descrito por las ecuaciones \ref{eq:loren
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.75\textwidth]{example_codes/enkf_pf_vmpf_lor63.eps}
+    \includegraphics[width=0.75\textwidth]{enkf_pf_vmpf_lor63.eps}
     \caption{Trayectorias reales y estimadas de $x$ mediante EnKF (arriba) filtro de partículas bootstrap (medio) y VMPF (abajo)}
     \label{fig:enkf_pf_vmpf_lor63}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.75\textwidth]{example_codes/rmse_var_ensemble_based.eps}
+    \includegraphics[width=0.75\textwidth]{rmse_var_ensemble_based.eps}
     \caption{RMSE y varianza para los tres métodos}
     \label{fig:rmse_var_ensemble_based}
 \end{figure}
