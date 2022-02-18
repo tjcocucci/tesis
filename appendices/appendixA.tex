@@ -62,7 +62,7 @@ Por otro lado, para obtener la distribución filtrante podemos usar la distribuc
             {p(\v y_t | \v x_t \v y_{1:t-1}) p(\v x_t | \v y_{1:t-1})}
             {p(\v y_t | \v y_{1:t-1})} && \text{Bayes}\\
     &= \frac{p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})}
-            {p(\v y_t | \v y_{1:t-1})} && \text{Propiedades HMM}\\
+            {p(\v y_t | \v y_{1:t-1})} && \text{Propiedades HMM} \label{eq:forward_backward_filter_complete}\\
     &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})
 \end{align}
 

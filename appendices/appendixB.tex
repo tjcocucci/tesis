@@ -31,3 +31,15 @@ Aquí damos una solución para la ecuación \ref{eq:null_elbo_grad} en el caso G
     S &= \gv\Sigma 
 \end{align*}
 donde hemos usado la expresión $\frac{\partial \log|\v X|}{\partial \v X} = \v X^{-T}$ para la derivada del logaritmo del determinante y $\frac{\partial \v a^T \v X^{-1} \v b }{\partial \v X} = \v X^{-T} \v a \v b^T \v X^{-1}$ para la derivada de la forma cuadrática \cite{Petersen2012}.
+
+\section{Factorización de $p(\v x_{t-1}, \v x_t| \v y_{1:t})$} \label{appendix:IS_factorization}
+
+Desarrollamos aquí la factorización de la probabilidad conjunta utilizada en \ref{eq:IS_factorization}.
+
+\begin{align}
+    p(\v x_{t-1}, \v x_t| \v y_{1:t}) &= p(\v x_{t-1} | \v x_t, \v y_{1:t}) p(\v x_t| \v y_{1:t}) && \text{Bayes} \\
+    &= p(\v x_{t-1} | \v x_t, \v y_{1:t-1}) p(\v x_t| \v y_{1:t}) && \text{Prop. HMM} \\
+    &= \frac{p(\v x_t| \v x_{t-1}, \v y_{1:t-1})p(\v x_{t-1} | \v y_{1:t-1})}{p(\v x_t |\v y_{1:t-1})} p(\v x_t| \v y_{1:t}) && \text{Bayes} \\
+    &= p(\v x_t| \v x_{t-1})p(\v x_{t-1} | \v y_{1:t-1})\frac{p(\v x_t| \v y_{1:t})}{p(\v x_t |\v y_{1:t-1})} && \text{Prop. HMM} \\
+    &= p(\v x_t| \v x_{t-1})p(\v x_{t-1} | \v y_{1:t-1})\frac{p(\v y_t| \v x_t)}{p(\v y_t |\v y_{1:t-1})} && \text{Ecuación \ref{eq:forward_backward_filter_complete}}
+\end{align}
