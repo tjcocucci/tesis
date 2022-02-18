@@ -1,36 +1,51 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
+from matplotlib.patches import Rectangle
+import seaborn as sns
 
 sQest = np.load('sQest_osc.npy')
 sRest = np.load('sRest_osc.npy')
 rmses = np.load('rmses_osc.npy')
 coverages = np.load('coverages_osc.npy')
 
-sQest = sQest[1:]
-sRest = sRest[1:]
-rmses = rmses[1:, 1:]
-coverages = coverages[1:, 1:]
+# first = 2
+# last = len(sQest) - 2
+# sQest = sQest[first:last]
+# sRest = sRest[first:last]
+# rmses = rmses[first:last, first:last]
+# coverages = coverages[first:last, first:last]
 
-fig, ax = plt.subplots(1, 2)
+fig, ax = plt.subplots(1, 2, sharey=True)
+fig.subplots_adjust(top=0.725, bottom=0.155, left=0.125, right=0.9, hspace=0.2, wspace=0.2)
 
 divnorm=colors.TwoSlopeNorm(0.95)
-ax[0].imshow(rmses, cmap='Reds')
-ax[1].imshow(coverages, cmap='RdBu', norm=divnorm)
 
+itrue = np.where(abs(sQest-0.5) < 1e-6)[0][0]
+jtrue = np.where(abs(sRest-0.5) < 1e-6)[0][0]
 
-print(sQest,  sRest)
+sns.heatmap(rmses, ax=ax[0], cmap='RdBu', cbar_kws=dict(use_gridspec=False, location="top"))
+sns.heatmap(coverages, ax=ax[1], cmap='RdBu', norm=divnorm, cbar_kws=dict(use_gridspec=False, location="top"))
+ax[0].add_patch(Rectangle((itrue, jtrue), 1, 1, fill=False, edgecolor='blue', lw=3))
+ax[1].add_patch(Rectangle((itrue, jtrue), 1, 1, fill=False, edgecolor='blue', lw=3))
 
-ax[0].set_xticks(range(len(sQest)))
-ax[0].set_yticks(range(len(sRest)))
-ax[1].set_xticks(range(len(sQest)))
-ax[1].set_yticks(range(len(sRest)))
+ax[0].set_yticks(np.arange(1.5, len(sQest), 2))
+ax[1].set_yticks(np.arange(1.5, len(sQest), 2))
+ax[0].set_yticklabels(sQest.round(2)[1::2])
+ax[1].set_yticklabels(sQest.round(2)[1::2])
 
-ax[0].set_xticklabels(sQest.round(2))
-ax[0].set_yticklabels(sRest.round(2))
-ax[1].set_xticklabels(sQest.round(2))
-ax[1].set_yticklabels(sRest.round(2))
+ax[0].set_xticks(np.arange(1.5, len(sRest), 2))
+ax[1].set_xticks(np.arange(1.5, len(sRest), 2))
+ax[0].set_xticklabels(sRest.round(2)[1::2])
+ax[1].set_xticklabels(sRest.round(2)[1::2])
 
-# fig.colorbar(r, ax=ax[0])
-# fig.colorbar(c, ax=ax[1])
+ax[0].tick_params(axis='x', rotation=90)
+ax[1].tick_params(axis='x', rotation=90)
+ax[0].tick_params(axis='y', rotation=0)
+
+ax[0].set_xlabel(r'$\sigma_R^2$')
+ax[0].set_ylabel(r'$\sigma_Q^2$')
+ax[1].set_xlabel(r'$\sigma_R^2$')
+
+plt.savefig("../figs/QR_heatmap.eps",bbox_inches='tight')
 plt.show()

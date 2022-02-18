@@ -54,7 +54,7 @@ def ensemble_time_series_coverage(x, xt, alpha=0.95):
     return time_series_coverage(means, covariances, xt, alpha=alpha)
 
 def rmse_ens(x, xt):
-    return np.sqrt(np.mean((x - xt[:, np.newaxis, :])**2))
+    return np.sqrt(np.mean((x.mean(1) - xt)**2))
 
 def f(t, x, Q=Q):
     x_temp = np.copy(x)
