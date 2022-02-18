@@ -47,5 +47,8 @@ ax[0].set_xlabel(r'$\sigma_R^2$')
 ax[0].set_ylabel(r'$\sigma_Q^2$')
 ax[1].set_xlabel(r'$\sigma_R^2$')
 
+ax[0].set_title('RMSE', y=50, pad=50)
+ax[1].set_title('Cobertura', y=50, pad=50)
+
 plt.savefig("../figs/QR_heatmap.eps",bbox_inches='tight')
 plt.show()
