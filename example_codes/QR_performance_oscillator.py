@@ -16,8 +16,9 @@ M = np.array([
 ])
 
 nx = 2
-ne = 50
-ncy = 200
+ne = 100
+ncy = 2500
+n_spinup = 50
 nt = 10
 m = 2
 
@@ -84,8 +85,8 @@ for i, q in enumerate(sQest):
         Rtest = lambda t: R_base*r
         xf_enkf, xa_enkf = enkf(y, x0_ens, fQ, Ht, Rtest)
 
-        rmse = rmses[i, j] = rmse_ens(xa_enkf[..., 10:], xt[..., 10:])
-        cov = coverages[i, j] = ensemble_time_series_coverage(xa_enkf[..., 10:], xt[..., 10:])
+        rmse = rmses[i, j] = rmse_ens(xa_enkf[..., n_spinup:], xt[..., n_spinup:])
+        cov = coverages[i, j] = ensemble_time_series_coverage(xa_enkf[..., n_spinup:], xt[..., n_spinup:])
         print(q, r)
         print(rmse, cov)
 
