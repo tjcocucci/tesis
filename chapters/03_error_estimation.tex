@@ -38,6 +38,15 @@ Las técnicas de asimilación de datos pueden inferir sobre variables no observa
 
 Para la extensión de $\v \mathcal{M}_t$ sobre los parámetros es común considerar que actúa como la identidad sobre los parámetros. Esto significa que si $\gv \theta \in \gv\Theta$ entonces $\v \mathcal{M}_t |_{\gv\Theta} (\gv \theta) = \gv \theta$. Sin embargo también habitual incorporar una caminata aleatoria Gaussiana $\v \mathcal{M}_t |_{\gv\Theta} (\gv \theta) = \gv \theta + \gv\epsilon_t$ con $\gv\epsilon_t \sim \mathcal{N}(\v 0, \gv\Sigma_{\gv\epsilon})$. Esto ayuda a que el pronóstico de los parámetros consiga una mejor exploración del espacio paramétrico. Por supuesto, se puede modelar una dinámica para la evolución de los parámetros si fuera necesario. En el caso que se utilice esta estrategia $\gv\Sigma_{\gv\epsilon}$ cuantifica la magnitud de los pasos de la caminata aleatoria y se constituye como un hiperparámetro que se puede calibrar para mejorar la performance del sistema de asimilación. 
 
+En la figura \ref{fig:augmented_state_example} podemos ver un experimento usando el EnKF en el modelo Lorenz-63 utilizando estado aumentado para estimar $\rho$. Consideramos que el valor verdadero de este parámetro varía en el tiempo de acuerdo a una función sinusoidal. El sistema es capaz de capturar estos cambios y las estimaciones sincronizan con el valor real del parámetro luego de unas pocas iteraciones. La varianza inicial del ensamble se eligió relativamente grande para una mejor exploración del espacio paramétrico.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{augmented_state_example.eps}
+    \caption{Estimación del parámetro $\rho$ del modelo Lorenz-63 mediante estado aumentado utilizando el EnKF}
+    \label{fig:augmented_state_example}
+\end{figure}
+
 La técnica de estado aumentado suele ser adecuada para muchos parámetros físicos y por lo tanto es tentador utilizarla para el tratamiento de los parámetros estocásticos. Sin embargo, debido a la falta de correlación entre la información observacional y los parámetros estocásticos, el método no produce buenos resultados. En \cite{Delsole2010} se puede encontrar una definición algo más precisa de parámetros determinísticos y estocásticos así como una justificación más completa de por qué aumentar el estado con parámetros estocásticos no puede dar buenas estimaciones.
 
 \section{Algoritmo EM}
