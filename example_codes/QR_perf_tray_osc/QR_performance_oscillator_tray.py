@@ -21,7 +21,7 @@ M = np.array([
 
 nx = 2
 ne = 100
-ncy = 2500
+ncy = 5000
 n_spinup = 50
 nt = 10
 m = 2
