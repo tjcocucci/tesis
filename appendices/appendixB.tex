@@ -43,3 +43,15 @@ Desarrollamos aquí la factorización de la probabilidad conjunta utilizada en \
     &= p(\v x_t| \v x_{t-1})p(\v x_{t-1} | \v y_{1:t-1})\frac{p(\v x_t| \v y_{1:t})}{p(\v x_t |\v y_{1:t-1})} && \text{Prop. HMM} \\
     &= p(\v x_t| \v x_{t-1})p(\v x_{t-1} | \v y_{1:t-1})\frac{p(\v y_t| \v x_t)}{p(\v y_t |\v y_{1:t-1})} && \text{Ecuación \ref{eq:forward_backward_filter_complete}}
 \end{align}
+
+\section{Aproximación de la verosimilitud}\label{appendix:likelihood_montecarlo}
+
+Desarrollamos aquí la aproximación de Monte Carlo utilizada en \ref{eq:likelihood_montecarlo}.
+
+\begin{align*}
+    \log p(\v y_{1:T}) &= \log \prod_{t=1}^{T} p(\v y_t | \v y_{1:t-1}) \\
+    &= \log \prod_{t=1}^{T} \int p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) d\v x_t \\
+    &= \sum_{t=1}^{T} \log \int p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) d\v x_t \\
+    &\approx \sum_{t=1}^{T} \log \frac{1}{N_p} \sum_{j=1}^{N_p} p(\v y_t | \v x_t^{f, (j)})
+\end{align*}
+donde las partículas $\{\v x_t^{f, (j)}\}_{j=1}^{N_p}$ están muestradas de la distribución de pronóstico $p(\v x_t | \v y_{1:t-1})$

@@ -181,6 +181,28 @@ Las ecuaciones \ref{eq:batchEM_SQ} y \ref{eq:batchEM_SR}, nos dan fórmulas para
 
 Podemos ver que el algoritmo involucra, para cada iteración, procesar las iteraciones hacia adelante mediante predicción y filtrado con el EnKF, reprocesarlas hacia atrás con el EnKS y luego computar con Monte Carlo las actualizaciones de los parámetros. Las pasadas hacia adelante y hacia atrás provienen de que el EnKF y EnKS son implementaciones del algoritmo \textit{forward-backward}. Esto significa que para utilizar este algoritmo debemos procesar todas las observaciones reiteradas veces. Además del costo computacional, esto implica que las observaciones tienen que ser almacenadas y no se contempla una posible incorporación de nuevas observaciones, situación que sería esperable en un sistema en tiempo real. Aunque el \textit{batch EM} combinado con EnKS es un método robusto para estimar la estrctura general de $\v Q$ y $\v R$ su naturaleza \textit{offline} lo puede hacer impráctico en algunas situaciones y demasiado costoso computacionalmente. Además, no siempre es posible o factible obtener valores esperados respecto a distribuciones suavizantes. Por estos motivos se han desarrollado técnicas \textit{online} o secuenciales de estimación de parámetros estocásticos. 
 
+\paragraph{Ejemplo EM-EnKS}
+
+Hacemos aquí una aplicación de el EM-EnKS sobre el modelo del oscilador armónico para la estimación conjunta de $\v Q$ y $\v R$. En la figura \ref{} podemos ver el error cuadrático medio entre las estimaciones y el valor real de los parámetros utilizados para generar las observaciones. Además mostramos la media de la diagonal de las matrices estimadas en cada iteración. En realidad cada entrada de las matrices está siendo estimada individualmente (salvo por los elementos simétricos respecto a la diagonal). Notamos que la convergencia es rápida en las primeras iteraciones y luego se desacelera. En la figura \ref{} se muestra el error cuadrático medio de las variables de estado suavizadas respecto a los respectivos valores reales y la log-verosimilitud de las observaciones computada mediante la siguiente aproximación:
+\begin{align*}
+    \log p(\v y_{1:T}) = \approx \sum_{t=1}^{T} \log \frac{1}{N_p} \sum_{j=1}^{N_p} p(\v y_t | \v x_t^{f, (j)})
+\end{align*}
+Se puede ver que mientras el RMSE disminuye, la verosimilitud aumenta. Notamos también que ambas métricas, son ruidosas debido a que la técnica de asimilación sólo aproxima mediante muestras a las distribuciones.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{em_enks_params.eps}
+    \caption{Panel superior: estimaciones de las medias de las diagonales de $\v Q$ y $\v R$. Las líneas intermitentes indican los valores reales. Panel inferior: errores cuadráticos medios de las estimaciones respecto a sus valores reales.}
+    \label{fig:em_enks_params}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{em_enks_rmse_llik.eps}
+    \caption{Log-verosimilitud y RMSE de las variables de estado suavizadas.}
+    \label{fig:em_enks_rmse_llik}
+\end{figure}
+
 \subsection{Online EM} \label{sec:onlineEM}
 
 Aquí expondremos el algoritmo \textit{online} basado en EM cuyo desarrollo fue publicado en \cite{Cocucci2021}. El objetivo es obtener una técnica que actualice la estimación del parámetro con cada nueva observación de manera que se puedan descartar las observaciones anteriores que ya han sido procesadas. Si tomamos como punto de partida las ecuaciones \ref{eq:batchEM_SQ} y \ref{eq:batchEM_SR} podemos ver que, cada sumando corresponde a una observación pero que si quisiéramos agregar una observación nueva (correspondiente al tiempo $T+1$) todos estos sumandos deberían ser recomputados. Esto es debido a que los valores esperados están condicionados a toda la ventana observacional anterior, $\v y_{1:T}$. Las nuevas distiribuciones predictivas y filtrantes, $p(\v x_{T+1} | \v y_{1:T})$ y $p(\v x_{T+1} | \v y_{1:T+1})$ pueden ser obtenidas o aproximadas utilizando las anteriores distribuciones predictivas y filtrantes que no necesitan ser cambiadas por la incorporación de la nueva observación. Sin embargo, las distribuciones suavizantes $p(\v x_t | \v y_{1:T})$ deben ser cambiadas por las que tienen en cuenta a la nueva observación, $p(\v x_t | \v x_{1:T+1})$.
