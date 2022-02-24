@@ -54,4 +54,4 @@ Desarrollamos aquí la aproximación de Monte Carlo utilizada en \ref{eq:likelih
     &= \sum_{t=1}^{T} \log \int p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) d\v x_t \\
     &\approx \sum_{t=1}^{T} \log \frac{1}{N_p} \sum_{j=1}^{N_p} p(\v y_t | \v x_t^{f, (j)})
 \end{align*}
-donde las partículas $\{\v x_t^{f, (j)}\}_{j=1}^{N_p}$ están muestradas de la distribución de pronóstico $p(\v x_t | \v y_{1:t-1})$
+donde las partículas $\{\v x_t^{f, (j)}\}_{j=1}^{N_p}$ están muestradas de la distribución de pronóstico $p(\v x_t | \v y_{1:t-1})$. La identidad utilizada en la primera línea se puede encontrar en \cite{Carrassi2017}
