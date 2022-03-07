@@ -1,5 +1,5 @@
 FILENAME=main
-FIGFILES := $(wildcard *.eps)
+FIGFILES := figs/$(wildcard *.eps)
 BIBFILES=bibliography.bib
 CHAPTERS=chapters
 APPENDICES=appendices
@@ -14,7 +14,8 @@ $(FILENAME).bbl: $(BIBFILES)
 	pdflatex $(FILENAME).tex
 
 tar:
-	tar -czvf main.tar.gz $(FIGFILES) $(FILENAME).tex
+	tar -czvf main.tar.gz $(FILENAME).tex $(FIGFILES) $(CHAPTERS)/*.tex \
+	$(APPENDICES)/*.tex $(BIBFILES) MastersDoctoralThesis.cls Makefile
 
 clean:
 	rm -f *.bcf *-blx.bib *.fdb_latexmk *.fls *.run.xml *.toc *.out \
