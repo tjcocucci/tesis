@@ -331,3 +331,56 @@ se puede expresar como $s(\v x_{t-1}, \v x_t, \v y_{1:t}) = (s^Q(\v x_{t-1}, \v 
     s^R(\v y_t, \v x_t) &= (\v y_t - \mathcal{Y}_t(\v x_t))(\v y_t - \mathcal{H}_t(\v x_t))^T
 \end{align*}
 podemos ver la similaridad entre este método y el EM-EnKS presentado en el algoritmo \ref{algo:em_enks}. Sin embargo, si aplicaramos  la versión \textit{online} a una ventana de tiempo $t = 1, ..., T$, podemos ver que este realiza aproximadamente la misma cantidad de operaciones en total que una única iteración de la versión \textit{offline}. De hecho, el EM \textit{online} requerirá $T$ pasos temporales de EnKF y $T$ pasos simples (de una sola observación) hacia atrás de EnKS: esto es equivalente al pase completo de EnKF+EnKS en la versión \textit{batch}. Por otro lado, la cantidad de evaluaciones de $s$ en el pase completo de la versión \textit{online} es $N_pT$, lo cual coincide con una única iteración del \textit{offline}.
+
+\section{EM \textit{online}: evaluación experimental}
+
+Expondremos aquí una evaluación experimental del método en distintos escenarios de interés para aplicaciones en asimilación de datos. La configuración de los experimentos consistirá en generar trayectorias reales de las variables de estado, mediante la llamada corrida real o natural, y de estas obtener observaciones sintéticas con parametrizaciones conocidas para $\v Q$ y $\v R$. Luego aplicaremos el EM \textit{online} para intentar estimar las variables de estado y sobre todo la parametrización original. Utilizaremos el Algoritmo \ref{algo:onlineEM_OSS} con el EnKF estocástico (Algoritmo \ref{algo:enkf_pert_obs}) y el paso de suavizado hacia atrás mediante el RTS-EnKS (Algoritmo \ref{algo:enks}) pero realizando un solo paso hacia atrás. Daremos a esta implementación el nombre OSS-EnKF (por \textit{one step smoother}). Por otro lado, para el Algoritmo \ref{algo:onlineEM_IS} utilizaremos dos implementaciones distintas, una con el EnKF estocástico la cual llamaremos IS-EnKF (por \textit{importance sampling}) y otra con el VMPF la cual denominaremos IS-VMPF. Para esta última implementación notamos que la estimación de la matriz de covarianzas del error de modelo $\v Q$ tiene una relevancia adicional pues utilizamos un kernel $K(\v x, \v x') = (\v x - \v x')^T \beta \v Q (\v x - \v x')$, por lo que el ancho de banda del kernel dependerá de las estimaciones de $\v Q$. Para todas las versiones del EM \textit{online} utilizaremos una tasa de aprendizaje $\gamma_t = t^{-\alpha}$ \citep{Legland1997} donde el valor por defecto es $\alpha = 0.6$. 
+
+\paragraph{Modelo Lorenz-63} \
+
+En este experimento utilizamos el modelo Lorenz-63 y estimamos $\v Q$ con las 3 implementaciones, considerando a $\v R$ conocido. El experimento se repite para distintas semillas de los gneradores aleatorios y distintos valores iniciales del parámetro. En la figura \ref{fig:lor63_seeds} se muestran las estimaciones de la media de la diagonal de $\v Q$, es decir la varianza media del error de modelo. La matriz $\v Q$ utilizada en en la corrida natural es un múltiplo de la identidad por lo que los valores fuera de la diagonal son nulos. Notemos que las trayectorias grises corresponden a repeticiones del experimento y no deben ser confundidas con miembros de ensamble, de hecho el método produce una única estimación por iteración. Sin embargo, las repeticiones nos dan una idea de la incerteza de las estimaciones la cual se estabiliza al rededor de los 500 ciclos de asimilación. Los tres métodos estiman correctamente el valor real del parámetro aunque los basados en importance sampling muestran una ligera subestimación. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{lor63_seeds.eps}
+    \caption{Estimaciones de la media de la diagonal de $\v Q$ con OSS-EnKF (panel superior), IS-EnKF (panel medio) y IS-VMPF (panel inferior).}
+    \label{fig:lor63_seeds}
+\end{figure}
+
+\paragraph{Modelo Lorenz-96} \
+
+En este experimento comparamos la performance del EM \textit{online} con el EM-EnKS, es decir una implementación \textit{offline} del algoritmo EM. Utilizamos el modelo Lorenz-96 \citep{Lorenz1996}, el cual está determinado por las siguientes ecuaciones diferenciales:
+\begin{align}
+    \frac{d X_n}{d t} = X_{n-1}(X_{n+1} - X_{n-2}) - X_n + F \hspace{1em} \forall n = 1, ..., N_x 
+\end{align}
+Consideraremos condiciones de frontera periódicas, es decir, $X_{-1} = X_{N_x-1}, X_0 = X_{N_x}, X_1 = X_{N_x+1}$. Este modelo busca emular el comportamiento de una cantidad atmosférica en un círculo de latitud con un forzado externo representado por $F$.
+
+Consideramos la estimación de una matriz $\v Q$ tridiagonal, es decir que tiene valores no nulos solamente.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{lor96_online_batch.eps}
+    \caption{}
+    \label{fig:lor96_online_batch}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{lor96_online_entrywise.eps}
+    \caption{}
+    \label{fig:lor96_online_entrywise}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{lor96_varyingQ.eps}
+    \caption{}
+    \label{fig:lor96_varyingQ}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{lor96_contours.eps}
+    \caption{}
+    \label{fig:lor96_contours}
+\end{figure}
