@@ -339,7 +339,6 @@ Expondremos aquí una evaluación experimental del método en distintos escenari
 \paragraph{Modelo Lorenz-63: consistencia respecto a valores iniciales} \
 
 En este experimento utilizamos el modelo Lorenz-63 y estimamos $\v Q$ con las 3 implementaciones, considerando a $\v R$ conocido. Esto se repite para distintas semillas de los generadores aleatorios y distintos valores iniciales del parámetro. El objetivo es evaluar la consistencia de las estimaciones y la comparabilidad de los métodos. La matriz $\v Q$ utilizada en en la corrida natural es un múltiplo de la identidad. En la figura \ref{fig:lor63_seeds} se muestran las estimaciones de la media de la diagonal de $\v Q$, es decir la varianza media del error de modelo. Notemos que las trayectorias grises corresponden a repeticiones del experimento y no deben ser confundidas con miembros de ensamble, de hecho el método produce una única estimación por ciclo de asimilación. Sin embargo, las repeticiones nos dan una idea de la incerteza de las estimaciones la cual se estabiliza al rededor de los 500 ciclos. Los tres métodos estiman correctamente el valor real del parámetro aunque los basados en importance sampling muestran una ligera subestimación. La velocidad de convergencia y la variabilidad en las estimaciones es también similar en todos los métodos.
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor63_seeds.eps}
@@ -350,7 +349,6 @@ En este experimento utilizamos el modelo Lorenz-63 y estimamos $\v Q$ con las 3 
 \paragraph{Modelo Lorenz-63: consistencia respecto a valores iniciales} \
 
 Para evaluar el efecto de la tasa de aprendizaje en las estimaciones realizamos un experimento similar al anterior: estimamos una matriz $\v Q$ diagonal considerando $\v R$ conocida en el modelo Lorenz-63. En cada corrida utilizamos el mismo set de observaciones sintéticas pero cambiamos el valor de $\alpha$ de la tasa de aprendizaje. En la figura \ref{fig:lor63_alphas} se muestran las estimaciones para la media de la diagonal de $\v Q$. Para valores mayores de $\alpha$ la convergencia es lenta e incluso puede no lograrse en 10000 ciclos de asimilación. Por otro lado, para valores más pequeños se obtiene una convergencia mucho más rápida. Las estimaciones que produce el método son una ponderación entre la estimación de la iteración anterior con el promedio de los estadísticos suficientes correspondientes a la observación que está siendo procesada. Cuando $\alpha$ es más cercano a 1 se da más peso a la estimación anterior y menos a la información introducida por la última observación. Esto puede interpretarse como que el método tiene más memoria por lo que las nuevas iteraciones no cambian sustancialmente las estimaciones, con lo cual estas resultan menos ruidosas pero la convergencia se realentiza. Por el contrario, para valores menores de $\alpha$ se le da mayor peso a los estadísticos suficientes correspondientes a la última observación y menos a las estimanciones anteriores. Esto acelera la convergencia pero las trayectorias se hacen más ruidosas debido al error de muestreo.
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor63_alphas.eps}
@@ -367,25 +365,21 @@ En aplicaciones geofísicas es normal que las variables estén correlacionadas e
 Tomaremos condiciones de frontera periódicas, es decir, $X_{-1} = X_{N_x-1}, X_0 = X_{N_x}, X_1 = X_{N_x+1}$. Este modelo busca emular el comportamiento de una variable atmosférica en un círculo de latitud con un forzado externo representado por $F$. Consideraremos, además de la varianza del error, representado por valores positivos en la diagonal de $\v Q$, covarianzas positivas e uniformes entre variables adyacentes. Esto significa que $\v Q_{i, (i+1)\%N_x} = \sigma_{ady}^2 > 0 \hspace{1em} \forall i = 1, ..., N_x$. Los valores en la diagonal también serán uniformes de manera que $\v Q_{i, i} = \sigma_{diag}^2 > 0 \hspace{1em} \forall i = 1, ..., N_x$. Para estimar esta matriz utilizamos las tres implementaciones del EM \textit{online} y también con 25 iteraciones del EM \textit{offline} en la implementación del Algoritmo \ref{algo:em_enks}. Notemos que la versión \textit{online} es una aproximación del \textit{offline} por lo que la segunda constituye una base de comparación razonable para la primera.
 
 A pesar de que la matriz $\v Q$ tiene una estructura que admite una representación de sólo dos parámetros, las estimaciones producidas por cualquiera de los métodos son entrada por entrada (salvo simetría pues los estadísticos suficientes son simétricos). Para verificar que el comportamiento de las estimaciones en cada entrada es consistente mostramos en la figura \ref{fig:lor96_online_entrywise} las trayectorias correspondientes. Podemos observar que estas se agrupan correctamente alrededor de los valores de la matriz $\v Q$ original.
-
-\begin{figure}[h]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_online_entrywise.eps}
     \caption{}
     \label{fig:lor96_online_entrywise}
 \end{figure}
-
-En la figura \ref{fig:lor96_online_batch} se puede ver la distancia Frobenious de las estimaciones de todos los métodos. Los errores de las estimaciones en los métodos secuenciales se aproximan con velocidad similar entre ellos al error obtenido por el EM \textit{offline}. Además, para cada estimación de $\v Q$ se realizó un filtrado con el EnKF con $\v Q$ fijada en el valor de la estimación. Del resultado de estos filtrados computamos el RMSE de las varibles de estado y la log-verosimilitud obtenida. Se puede ver en la figura \ref{fig:lor96_online_batch} que la performance según estas métricas, son similares a las del EM \textit{batch}.
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_online_batch.eps}
     \caption{}
     \label{fig:lor96_online_batch}
 \end{figure}
+En la figura \ref{fig:lor96_online_batch} se puede ver la distancia Frobenious de las estimaciones de todos los métodos. Los errores de las estimaciones en los métodos secuenciales se aproximan con velocidad similar entre ellos al error obtenido por el EM \textit{offline}. Además, para cada estimación de $\v Q$ se realizó un filtrado con el EnKF con $\v Q$ fijada en el valor de la estimación. Del resultado de estos filtrados computamos el RMSE de las varibles de estado y la log-verosimilitud obtenida. Se puede ver en la figura \ref{fig:lor96_online_batch} que la performance según estas métricas, son similares a las del EM \textit{batch}.
 
 Finalmente, realizamos un experimento similar pero considerando que la matriz $\v Q$ varía lentamente en el tiempo de acuerdo a una función sigmoide. La versión \textit{batch} del EM produce una única estimación del parámetro para toda la ventana observacional. Por el otro lado los métodos secuenciales, al producir una estimación por cada observación son capaces de capturar cambios en el parámetro. Notemos sin embargo que las estimaciones, al tener ``memoria'' no pueden capturar cambios muy abruptos. En la figura \ref{fig:lor96_varyingQ} se observa que todos los métodos responden a los cambios en $\v Q$ aunque, especialmente para los valores en la diagonal se produce una subestimación respecto al valor real. Esto podría deberse a que el efecto de la memoria del método provoque que las estimaciones aún tengan una tendencia hacia los valores más tempranos y más pequeños de la ventana temporal. 
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_varyingQ.eps}
@@ -393,9 +387,11 @@ Finalmente, realizamos un experimento similar pero considerando que la matriz $\
     \label{fig:lor96_varyingQ}
 \end{figure}
 
+\clearpage
+
 \paragraph{Modelo Lorenz-96: estimación conjunta de $\v Q$ y $\v R$} \
 
-Hasta ahora nos hemos enfocado en la especificación del error de modelo puesto que es una fuente de incerteza de la cual, en la mayor parte de los casos no tenemos forma de determinar debido a que suele provenir del desconocimiento del proceso subyacente. El error observacional por otro lado, muchas veces se puede aproximar pues conocemos mejor el proceso observacional. Sin embargo, como hemos visto en la sección \ref{sec:model_obs_error} la especificación de ambas incertezas es importante y de hecho existe interacción entre ambas cantidades. Por esto se hace importante estudiar la estimación conjunta de $\v Q$ y $\v R$. En este experimento lo hacemos tomando a ambaas como matrices diagonales múltiplos de la identidad: $\v Q = \sigma_{\v Q}^2$ y $\v R = \sigma_{\v R}^2$. El modelo utilizado es el Lorenz-96 con 8 variables, todas observadas. 
+Hasta ahora nos hemos enfocado en la especificación del error de modelo puesto que es una fuente de incerteza de la cual, en la mayor parte de los casos, no tenemos forma de determinar debido a que suele provenir del desconocimiento del proceso subyacente. El error observacional por otro lado, muchas veces se puede aproximar pues conocemos mejor el proceso observacional. Sin embargo, como hemos visto en la sección \ref{sec:model_obs_error} la especificación de ambas incertezas es importante y de hecho existe interacción entre ambas cantidades. Por esto se hace importante estudiar la estimación conjunta de $\v Q$ y $\v R$. En este experimento lo hacemos tomando a ambas como matrices diagonales múltiplos de la identidad: $\v Q = \sigma_{\v Q}^2$ y $\v R = \sigma_{\v R}^2$. El modelo utilizado es el Lorenz-96 con 8 variables, todas observadas. Consideramos dos escenarios: en el primero tenemos errores observacionales y de modelo similares, $\sigma_{\v Q}^2 = 0.3$ y $\sigma_{\v R}^2 = 0.5$; mientras que en el segundo tomamos un error observacional mayor, $\sigma_{\v R}^2 = 1.5$. El efecto que se encuentra cuando $\v Q$ y $\v R$ son similares es que la verosimilitud tiene un máximo mejor definido. En la figura \ref{fig:lor96_contours} vemos los contornos de la verosimilitud en función de $\sigma_{\v Q}^2$ y $\sigma_{\v R}^2$ para ambos casos. El panel izquierdo corresponde al escenario de errores similares y se puede observar que el máximo es más definido que el escenario con errores disímiles del panel derecho. Además graficamos las trayectorias de las estimaciones para distintos valores iniciales. Se puede ver que cuando el máximo está mejor definido las estimaciones son más precisas. Finalmente notamos que los valores de la verosimilitud son menores en el caso de mayor error observacional, lo cual es esperable porque las observacions son menos precisas.
 
 \begin{figure}[h]
     \centering
