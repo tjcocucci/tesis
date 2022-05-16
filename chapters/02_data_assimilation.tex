@@ -59,7 +59,8 @@ El modelo propuesto por las ecuaciones \ref{eq:transition} y \ref{eq:observation
         p(\v y_{1:t} | \v x_{0:t}) = \prod_{k=1}^{t} p(\v y_k | \v x_k)
     \end{align*}
 \end{enumerate}
-\ma{Estas propiedades resultan intuitivas del graphical model...}
+El diagrama de la figura \ref{dia:hmm} puede ser interpretado como un modelo gráfico, con lo cual las propiedades de Markovianidad e independencia condicional de las observaciones se deducen de manera automática de esta interpretación. Esto habilita además el uso de propiedades de modelos gráficos como la D-separación (ver \cite{Jordan1999}).
+
 \begin{figure}[h]
     \centering
     \begin{tikzpicture}[node distance=3.5cm, auto]
@@ -104,20 +105,20 @@ En modelos de Markov escondidos, bajo la suposición de que contamos con un mode
 Si consideramos una ventana de tiempo $t = 1, ..., T$ el algoritmo primero realiza el forward-pass alternando un paso de predicción, en el que obtiene $p(\v x_t | \v y_{1:t-1})$ con un paso de filtrado (también llamado análisis o update) en el que se incorpora la información de la observación a tiempo $t$ y se obtiene $p(\v x_t | \v y_{1:t})$. 
 
 Para $t = 1, ..., T$:
-\begin{itemize}
-    \item Predicción: $p(\v x_t | \v y_{1:t-1}) = \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1}$\label{eq:forward_pred}
-    \item Análisis: $p(\v x_t | \v y_{1:t}) \propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1})$\label{eq:forward_filt}
-\end{itemize}
+\begin{align}
+    p(\v x_t | \v y_{1:t-1}) &= \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} \hspace{2em} &\text{Predicción} \label{eq:forward_pred} \\
+    p(\v x_t | \v y_{1:t}) &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) \hspace{2em} &\text{Análisis} \label{eq:forward_filt}
+\end{align}
 Para hacer la predicción se integra utilizando el modelo de transición. La interpretación de la fórmula es que se calcula la probabilidad de $\v x_t$ dado $\v x_{t-1}$ considerando todos los valores posibles de $\v x_{t-1}$ que obedecen a la distribución filtrante del tiempo anterior. De esta manera, el paso de predicción es el encargado de propagar hacia adelante la distribución del estado. Por otro lado, para hacer el análisis se usa la regla de Bayes y se incorpora $\v y_t$ utilizando el modelo observacional, es decir se actualiza la distribución obtenida en el paso de predicción. Notemos que usamos la convención notacional $\v y_{1:0} = \emptyset$ lo que le da consistencia a las fórmulas para $t = 0$.
 
 Las distribuciones obtenidas en el forward-pass pueden ser utilizadas a su vez para computar las distribuciones suavizantes iterando esta vez hacia atrás, desde el último tiempo hacia el primero de la siguiente manera:
 
-Para $t = T-1, ..., 0$
-\begin{itemize}
-    \item Suavizado: $p(\v x_t | \v y_{1:T}) = p(\v x_t |\v y_{1:t}) \int \frac{p(\v x_{t+1} | \v x_t)}
+Para $t = T-1, ..., 0$:
+\begin{align}
+    p(\v x_t | \v y_{1:T}) = p(\v x_t |\v y_{1:t}) \int \frac{p(\v x_{t+1} | \v x_t)}
     {p(\v x_{t+1} |\v y_{1:t})}
-    p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1}$
-\end{itemize}
+    p(\v x_{t+1} | \v y_{1:T}) d\v x_{t+1} \hspace{2em} &\text{Suavizado}
+\end{align}
 donde el caso $t = T$ ya está cubierto pues la distribución filtrante para el último tiempo coincide con la suavizante.
 
 La deducción de las fórmulas para predicción, análisis y suavizado están desarrolladas en mayor detalle en el apéndice \ref{appendix:ffbs}.
@@ -151,7 +152,15 @@ mientras que para el análisis resulta:
 \end{align}
 donde $\v K_t = \v P_t^f \v H_t^T(\v R_t + \v H_t \v P_t^f \v H_t^T)^{-1}$ se denomina matriz de ganancia de Kalman, mientras que el término $(\v y_t - \v H_t \v x_t^f)$ son denominadas innovaciones porque dan cuenta de la diferencia entre el pronóstico y las observación. La deducción de estas fórmulas está desarrollada en el apéndice \ref{appendix:kf}
 
-Notemos que la media de los pronósticos es tan solo la propagación hacia adelante de la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación. \ma{interpretar la K con las cov}
+Notemos que la media de los pronósticos es tan solo la propagación hacia adelante de la media filtrante del tiempo anterior. Por otro lado la matriz de ganancia de Kalman funciona como una matriz de pesos que determina si el estado del análisis será más cercano al pronóstico o si le dará más importancia a la observación.
+
+Para dar una interpretación de esto consideremos un ejemplo sencillo en donde el espacio observacional y de las variables de estado son unidimensionales. Bajo esta suposición las matrices $\v P^f$ y $\v R$ se reducen a escalares: la varianza del error del pronóstico, $\sigma_f^2$, y del error observacional $\sigma_{obs}^2$. Además consideraremos que $\v H$ es la identidad, es decir al escalar 1. Notemos que quitamos la dependencia temporal, sólo consideraremos el paso de un pronóstico a un análisis. De esta manera las ecuaciones que determinan a la ganancia de Kalman y a la media y varianza del análisis se reducen a las siguientes expresiones:
+\begin{align}
+    K &= \frac{\sigma_f^2}{\sigma_f^2 + \sigma_{obs}^2} \\ 
+    x^a &=  x^f + K (y - x^f) \\ 
+    P^a &= (1 - K)  P^f
+\end{align}
+Podemos ver que si el error en el pronóstico es muy pequeño en relación al error observacional, $\sigma_f^2 \ll \sigma_{obs}^2$, entonces $K$ tiende a 0 con lo que $x^a$ tiende a $x^f$ y $P_a$ a $P^f$. Es decir que si el pronóstico es mucho más preciso en relación a la observación, el análisis va a ignorar la información de la observación y será prácticamente igual al pronóstico. De manera análoga, si el error observacional es mucho menor en relación al del pronóstico, es decir si $\sigma_{obs}^2 \ll \sigma_f^2$, $K$ tiende a la identidad y por lo tanto $x^a$ tiende a $y$ mientras que $P^a$ tiende a 0. Esto significa que si la observación es muy precisa respecto al pronóstico el análisis tenderá a la observación y con varianza nula pues $y$ es una realización puntual.
 
 \paragraph{Ejemplo: oscilador armónico} \
 
@@ -165,7 +174,7 @@ donde $\omega$ es la frecuencia angular. Podemos considerar un integrador numér
     v_t &= v_{t-1} - \omega^2 x_{t-1} dt
 \end{align*}
 que constituye un sistema lineal que permite la expresión:
-\begin{align*}
+\begin{align}
 \underbrace{\begin{pmatrix*}
         x_t \\
         v_t
@@ -177,17 +186,15 @@ que constituye un sistema lineal que permite la expresión:
 \underbrace{\begin{pmatrix*}
         x_{t-1} \\
         v_{t-1}
-    \end{pmatrix*}}_{\v x_{t-1}}
-\end{align*}
+    \end{pmatrix*}}_{\v x_{t-1}} \label{eq:oscillator_matrix_eq}
+\end{align}
 Adicionalmente podemos incorporar al modelo ruido Gaussiano aditivo constante $\gv\eta_t \sim \mathcal{N}(\v 0, \v Q)$ para obtener una expresión como \ref{eq:kf_forward}. Para el modelo observacional consideraremos que sólo obtenemos datos de la posición utilizando la matriz $\v H_t = (0, 1)$ y que estos datos tienen error aditivo $\gv\nu_t \sim \mathcal{N}(\v 0, \v R)$.
 
-\ma{Para obtener observaciones sinteticas, integramos una trayectoria de Eq. XXX que consideramos la trayectoria verdadera y de Eq. XXX..     obtenemos las observaciones, donde se ha agregado a la trayectoria verdadera el ruido que representa el error observacional.}
-
-Simulamos entonces una trayectoria que consideramos la trayectoria verdadera y de esta obtenemos las observaciones. Utilizando el filtro de Kalman podemos intentar estimar la trayectoria real a través de la asimilación de los datos simulados. En la figura \ref{fig:KF_harmonic_oscillator} podemos ver las trayectorias reales (que no tienen amplitud constante debido al error introducido por $\gv\eta$) y las estimaciones de las medias del filtro. Estas son naturalmente más precisas para la variable observada, sin embargo las correlaciones entre las observaciones y las variables no observadas que utiliza el filtro permiten un seguimiento aproximado de la velocidad. Es importante señalar que el filtro de Kalman no produce solo una estimación de las medias sino que provee una medida de la incerteza mediante estimaciones de las varianzas. En la figura \ref{fig:KF_bayes} se representan las densidades de probabilidad del pronóstico y del análisis junto con la verosimilitud de la observación proyectadas sobre el espacio de $x$. Corresponden a un tiempo fijo indicado por la línea de corte vertical del panel superior de la figura \ref{fig:KF_harmonic_oscillator}. El pronóstico actúa como una probabilidad \textit{a priori} que se combina con la verosimilitud, mediante la regla de Bayes que subyace al análisis del filtro de Kalman, para conformar la distribución \textit{a posteriori} que corresponde al análisis. La estimación del análisis mejora al pronóstico utilizando la observación. Además, la incerteza del análisis es menor a la del pronóstico y a la de la observación, lo cual es una propiedad que se hereda de la regla de Bayes. \ma{Falta discusion efecto secuencial de las obs sobre la posterior}
+Simulamos entonces una trayectoria evolucionando temporalmente la ecuación \ref{eq:oscillator_matrix_eq} desde una condición inicial arbitraria. Luego, añadimos ruido a esta trayectoria para representar el error observacional, y obtenemos observaciones sintéticas. Utilizando el filtro de Kalman podemos intentar estimar la trayectoria real a través de la asimilación de los datos simulados. En la figura \ref{fig:KF_harmonic_oscillator} podemos ver las trayectorias reales (que no tienen amplitud constante debido al error introducido por $\gv\eta$) y las estimaciones de las medias del filtro. Estas son naturalmente más precisas para la variable observada, sin embargo las correlaciones entre las observaciones y las variables no observadas que utiliza el filtro permiten un seguimiento aproximado de la velocidad. Es importante señalar que el filtro de Kalman no produce solo una estimación de las medias sino que provee una medida de la incerteza mediante estimaciones de las varianzas. En la figura \ref{fig:KF_harmonic_oscillator} graficamos los intervalos de confianza del 95\% determinados por la estimación de la varianza filtrante determinada por $P_t^a$. Esta se reduce en los primeros ciclos de asimilación. El sistema va incorporando las observaciones una a una de manera secuencial para obtener las estimaciones de las distribuciones filtrantes, y a mediada que lo hace la varianza del error se reduce. Las distribuciones filtrantes $p(\v x_t | \v y_{1:t})$ están condicionadas a más observaciones a medida que $t$ crece y como consecuencia en las primeras iteraciones tenemos mayor varianza hasta que se acumulan suficientes observaciones y la variabilidad se estabiliza. En la figura \ref{fig:KF_bayes} se representan las densidades de probabilidad del pronóstico y del análisis junto con la verosimilitud de la observación proyectadas sobre el espacio de $x$. Corresponden a un tiempo fijo indicado por la línea de corte vertical del panel superior de la figura \ref{fig:KF_harmonic_oscillator}. El pronóstico actúa como una probabilidad \textit{a priori} que se combina con la verosimilitud, mediante la regla de Bayes que subyace al análisis del filtro de Kalman, para conformar la distribución \textit{a posteriori} que corresponde al análisis. La estimación del análisis mejora al pronóstico utilizando la observación. Además, la incerteza del análisis es menor a la del pronóstico y a la de la observación, lo cual es una propiedad que se hereda de la regla de Bayes. 
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.75\textwidth]{KF_harmonic_oscillator.eps}
+    \includegraphics[width=0.75\textwidth]{KF_harmonic_oscillator_CIs.pdf}
     \caption{Trayectorias reales y estimadas mediante el filtro de Kalman. Sólo la posición es observada}
     \label{fig:KF_harmonic_oscillator}
 \end{figure}
@@ -201,14 +208,19 @@ Simulamos entonces una trayectoria que consideramos la trayectoria verdadera y d
 
 \section{Métodos variacionales}
 
-El problema de obtener un análisis a partir de un pronóstico y una observación puede ser interpretado de manera variacional. Mencionamos brevemente la idea que motiva a los métodos variacionales pues constituyen una familia de técnicas que han sido aplicadas a modelos meteorológicos operacionales y que además dan una perspectiva que enriquece la interpretación de otras estrategias de asimilación de datos. Supongamos que tenemos un pronóstico $\v x^f$ con un error de varianza $\v P^f$ y una observación $\v y$ con un error de varianza $\v R$ y que el operador que mapea el espacio de las variables de estado al espacio de las observaciones es $\mathcal{H}$. Si queremos encontrar un valor de análisis $\v x^a$ que minimice el error que introduce el pronóstico y la observación, podemos pensar en minimizar la siguiente función de costo:
-\begin{align}
-    J(\v x) &= (\v x - \v x^f) {\v P^f}^{-1} (\v x - \v x^f)^T + (\v y - \mathcal{H} (\v x)) \v {R}^{-1} (\v y - \mathcal{H} (\v x))^T \label{eq:3dvar_cost} \\
-    &= J^f(\v x) + J^o(\v x)
+El problema de obtener un análisis a partir de un pronóstico y una observación puede ser interpretado de manera variacional. Mencionamos brevemente la idea que motiva a los métodos variacionales pues constituyen una familia de técnicas que han sido aplicadas a modelos meteorológicos operacionales y que además dan una perspectiva que enriquece la interpretación de otras estrategias de asimilación de datos. Para esto consideremos el problema de obtener un análisis partiendo desde un pronóstico de media $\v x^f$ y un error de varianza $\v P^f$; una observación $\v y$ con un error de varianza $\v R$ y con el operador $\mathcal{H}$ que mapea el espacio de las variables de estado al espacio de las observaciones. Nuestro objetivo será encontrar el estimador MAP (\textit{máximo a posteriori}), es decir tomaremos a la media del análisis, $\v x^a$ como el valor de $\v x$ tal que maximice la probabilidad a posteriori $p(\v x | \v y)$. Aplicando la regla de Bayes tenemos que:
+\begin{align*}
+    \v x^a &= \argmax\limits_{\v x} p(\v x | \v y) \\
+    &= \argmax\limits_{\v x} \frac{p(\v y | \v x) p(\v x)}{p(\v y)} \\
+    &= \argmin\limits_{\v x} - \log p(\v y | \v x) - \log p(\v x)
+\end{align*}
+Si adicionalmente suponemos que la verosimilitud $p(\v y | \v x)$ y el \textit{prior} $ p(\v x)$ son Gaussianas podemos reescribir el problema como la minimización de una función de costo:
+\begin{align} \label{eq:3dvar_cost}
+    \v x^a &= \argmin\limits_{\v x} (\v x - \v x^f) {\v P^f}^{-1} (\v x - \v x^f)^T + (\v y - \mathcal{H} (\v x)) \v {R}^{-1} (\v y - \mathcal{H} (\v x))^T \\
+    &= \argmin\limits_{\v x} J(\v x)
 \end{align}
 
-\ma{Esto para consistencia deberia introducirse a partir de las distribuciones, asociandolo al log de la posterior/log lik. y decir que lo que se quiere estimar es el MAP}
-El primer término da cuenta del costo cuadrático asociado a alejarse del pronóstico y, análogamente, el segundo corresponde a la penalización por alejarse de la observación. Es de esperar entonces que el minimizador de $J$ pondere ambas fuentes de información. De hecho, mientras menor sea el error del pronóstico, mayor será el costo de alejarse de este y para la observación tenemos una situación equivalente. Notemos que esta función de costo supone que los errores sean Gaussianos, aditivos e insesgados. Por otro lado, no hay suposiciones explícitas para el modelo observacional $\mathcal{H}$ ni para el modelo $\mathcal{M}$. Este último, ni siquiera está incluído porque se hace la suposición de que ya se cuenta con un pronóstico. Sin embargo, si el pronóstico proviene de un modelo no lineal, no es posible en principio garantizar la Gaussianidad de su error. Sobre el operador observacional también hay que aclarar que dependiendo del método con que se minimice la función de costo, es posible que se necesiten requisitos adicionales: por ejemplo sería esperable que el método de optimización requiera que el operador sea linealizable.\ma{no entiendo a que apuntas, pero es importante remarcar que la tecnica va a capturar los efectos nolineales de la H} En el caso en que este operador\ma{observacional} sea lineal, $J$ es una función cuadrática con un único mínimo y, \me{de hecho}\ma{bajo la hipotesis de H lineal}, este coincide con la media del análisis tal como se lo computa en el filtro de Kalman.
+El primer término da cuenta del costo cuadrático asociado a alejarse del pronóstico y, análogamente, el segundo corresponde a la penalización por alejarse de la observación. Es de esperar entonces que el minimizador de $J$ pondere ambas fuentes de información. De hecho, mientras menor sea el error del pronóstico, mayor será el costo de alejarse de este y para la observación tenemos una situación equivalente. Notemos que esta función de costo supone que los errores sean Gaussianos, aditivos e insesgados. Por otro lado, no hay suposiciones explícitas para el modelo observacional $\mathcal{H}$ ni para el modelo $\mathcal{M}$. Este último, ni siquiera está incluído porque se hace la suposición de que ya se cuenta con un pronóstico. Sin embargo, si el pronóstico proviene de un modelo no lineal, no es posible en principio garantizar la Gaussianidad de su error. Sobre el operador observacional también hay que aclarar que dependiendo del método con que se minimice la función de costo, es posible que se necesiten requisitos adicionales: por ejemplo sería esperable que el método de optimización requiera que el operador sea linealizable para poder utilizar métodos de segundo orden. Bajo la hipótesis que el operador observacional se lineal, $J$ resulta en una función cuadrática con un único mínimo el cual coincide con la media del análisis tal como se lo computa en el filtro de Kalman. Por otro lado, cuando $\mathcal{H}$ es no lineal la función de costo captura estos efectos y de hecho puede constituir una función con múltiples mínimos locales que no sea tan sencilla para optimizar.
 \ma{Aca si tenes ganas se puede hacer alguna figura de un H nolineal como la variacional estima el MAP y la media de la posterior queda por otro lado}
 
 La metodología que implementa la minimización de $J$ es comúnmente conocida como 3DVar \citep{Courtier1998}, pero hay que mencionar que el planteo variacional del problema abre la puerta a múltiples variantes, ya que se pueden explorar distintos tipos de optimizadores (por ejemplo simplex, quasi-Newton o gradiente conjugado), distintas condiciones iniciales, precondicionamientos, regularización de $J$, etc. Finalmente mencionamos el método 4DVar \citep{Talagrand1987, Rabier2003} el cual es una extensión de 3DVar pero que procesa una ventana de observaciones simultáneamente, es decir funciona como un suavizador en lugar de como un filtro. El problema que busca optimizar 4DVar es la minimización de una función de costo similar a \ref{eq:3dvar_cost} pero que incluye muchas observaciones distribuidas temporalmente. Además se plantea como un problema de optimización con resticciones pues la minimización se hace sujeta a que la solución sea una trayectoria del modelo del que se obtienen los pronósticos.
@@ -219,25 +231,23 @@ El filtro de Kalman constituye una técnica robusta que da una solución exacta 
 \subsection{Monte Carlo secuencial}
 
 
-\ma{Hara falta introducir monte carlo?}
-Los filtros de partículas son también conocidos como métodos de Monte Carlo secuencial ya que utilizan el esquema secuencial de dos pasos de predicción-análisis descrito por las ecuaciones \ref{eq:forward_pred} y \ref{eq:forward_filt} \ma{???}. De hecho, el enfoque de estos métodos es el de resolver las integrales de estas ecuaciones, no de manera explícita sino \ma{a traves del metodo de Monte Carlo, i.e.} utilizando las aproximaciones empíricas de las distribuciones implicadas. Si tenemos una función de densidad de probabilidades $p$ y una conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ muestreadas de manera independiente con esta probabilidad, i.e. $\v x^{(i)}\sim p$, entonces la aproximación empírica de $p$ basada en esta muestra es:
-\begin{align*}
-    p(\v x) \approx \frac{1}{N}\sum_{i=1}^N \delta_{\v x^{(i)}}(\v x)
-\end{align*}
-\ma{[no empezaria con esto sino con alguna integral de la distribucion como lo que tenes mas abajo y en todo caso luego decis que se puede intrepretar como]}
-donde $\delta_{\v a}$ es la delta de Dirac que acumula toda la probabilidad en el punto $\v a$ siendo nula en todo otro punto. Esta aproximación está sustentada en la ley de los grandes números, dado que se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas.
+Los filtros de partículas son también conocidos como métodos de Monte Carlo secuencial ya que utilizan el esquema secuencial de dos pasos de predicción-análisis descrito por las ecuaciones \ref{eq:forward_pred} y \ref{eq:forward_filt}. De hecho, el enfoque de estos métodos es el de resolver las integrales de estas ecuaciones, no de manera explícita sino mediante aproximaciones de Monte Carlo. Esto siginifica que si tenemos una función de densidad de probabilidades $p$ y una conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ muestreadas de manera independiente con esta probabilidad, i.e. $\v x^{(i)}\sim p$, entonces, por la ley de los grandes números, se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas:
 \begin{align*}
     \frac{1}{N}\sum_{i=1}^N f(\v x^{(i)}) \xrightarrow{c. s.} \int f(\v x) p(\v x) d \v x
 \end{align*}
-\ma{Faltan Referencias.}
+Otra interpretación de la aproximación de Monte Carlo es que se utiliza la aproximación empírica de $p$ basada en la muestra $\{\v x^{(i)}\}_{i=1}^N$, es decir que se considera lo siguiente:
+\begin{align*}
+    p(\v x) \approx \frac{1}{N}\sum_{i=1}^N \delta_{\v x^{(i)}}(\v x)
+\end{align*}
+donde $\delta_{\v a}$ es la delta de Dirac que acumula toda la probabilidad en el punto $\v a$ siendo nula en todo otro punto (ver por ejemplo \cite{Doucet2001}).
 
-Existe una generalización de la aproximación de Monte Carlo denominada muestreo de importancia.\ma{Me parece mejor motivarlo con el error que produce monte carlo para cuando f cambia mucho y luego decir que muestreo de importancia ...} A pesar de su nombre es un método para aproximar integrales. Cuando no es posible muestrear de $p$ se puede entonces muestrear otra distribución con densidad $q$ que actúe de proxy de $p$. En principio la única condición para $q$ es que su soporte contenga al de $p$. Este método también admite que no se pueda evaluar exactamente $p$ y $q$ sino que sólo podamos evaluar versiones no normalizadas $\tilde{p}$ y $\tilde{q}$ de estas densidades. Entonces, si tenemos un conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ tales que $\v x^{(i)}\sim q$, podemos hacer la aproximación dada por las siguientes fórmulas:
+Existe una generalización de la aproximación de Monte Carlo denominada muestreo de importancia. A pesar de su nombre es un método para aproximar integrales. Cuando no es posible muestrear de $p$ se puede entonces muestrear otra distribución con densidad $q$ que actúe de proxy de $p$. En principio la única condición para $q$ es que su soporte contenga al de $p$. Este método también admite que no se pueda evaluar exactamente $p$ y $q$ sino que sólo podamos evaluar versiones no normalizadas $\tilde{p}$ y $\tilde{q}$ de estas densidades. Entonces, si tenemos un conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ tales que $\v x^{(i)}\sim q$, podemos hacer la aproximación dada por las siguientes fórmulas:
 \begin{align*}
     \int f(\v x) p(\v x) d \v x &\approx \sum_{i=1}^N w_i f(\v x^{(i)}) \\
     w_i &= \tilde{w}_i / \textstyle\sum_{i=1}^N \tilde{w}_i \\
     \tilde{w}_i &= \tilde{p}(\v x^{(i)}) / \tilde{q}(\v x^{(i)})
 \end{align*}
-donde $w_i$ son denominados pesos de importancia y $\tilde{w}_i$ son sus versiónes no normalizadas. Por su parte, $q$ es denominada la distribución \textit{propuesta}.
+donde $w_i$ son denominados pesos de importancia y $\tilde{w}_i$ son sus versiónes no normalizadas. Por su parte, $q$ es denominada la distribución \textit{propuesta}. La metodología puede incluso resultar más eficiente en el número de partículas necesarias que el método de Monte Carlo tradicional puesto que se puede elegir una distribución $q$ que muestree mejor el espacio en relación a la función $f$. En general es conveniente muestrear más partículas en las regiones en las que el integrando sea más relevante, es decir donde $p(\v x) q(\v x)$ sea mayor (ver por ejemplo \cite{Murphy2012,Mackay2003}).
 
 Los métodos de Monte Carlo secuencial producen conjuntos de partículas que aproximan a la distribución filtrante. Estas partículas además pueden ser ponderadas, es decir pueden traer pesos asociados. Concretamente, para cada tiempo $t$ se obtienen $\{\v x_t^{(i)}, w_t^{(i)}\}_{i=1}^{N}$ tal que sea una aproximación empírica de $p(\v x_t | \v y_{1:t})$.
 
@@ -259,7 +269,7 @@ Esta implementación es habitualmente llamada SIS (\textit{sequential importance
     \hat{w_i} &= 1 / N
 \end{align*}
 
-Esto tiene el efecto que las partículas con mayor peso estarán repetidas y las de menos peso serán eliminadas. A pesar de mitigar la degeneración del filtro causa el problema de empobrecimiento de diversidad del que hablaremos más adelante. No es necesario hacer remuestreo de partículas en cada paso de tiempo y un criterio común para decidir si se hace o no es verificar si el número efectivo de partículas $N_{eff}$ está por debajo de un valor umbral $N_T$. El número efectivo de partículas se puede estimar de la siguiente manera \cite{Arulampalam2002}:\ma{Doucet 1987 que lo deriva arulampalam solo lo menciona}
+Esto tiene el efecto que las partículas con mayor peso estarán repetidas y las de menos peso serán eliminadas. A pesar de mitigar la degeneración del filtro causa el problema de empobrecimiento de diversidad del que hablaremos más adelante. No es necesario hacer remuestreo de partículas en cada paso de tiempo y un criterio común para decidir si se hace o no es verificar si el número efectivo de partículas $N_{eff}$ está por debajo de un valor umbral $N_T$. El número efectivo de partículas se puede estimar de la siguiente manera \citep{Liu1998}:
 \begin{align*}
     N_{eff} \approx \frac{1}{\sum_{i=1}^N (w_i)^2} \dot{=} \widehat{N_{eff}}
 \end{align*}

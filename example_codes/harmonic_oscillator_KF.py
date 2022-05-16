@@ -36,6 +36,12 @@ xf, Pf, xa, Pa = KF(x0_est, P0, y, M, Q, H, R)
 
 cut = 53
 
+# fig, ax = plt.subplots()
+# ax.plot(Pf.mean((0, 1)), color='tab:green', label=r'$P^f$ (varianza media)', zorder=100)
+# ax.plot(Pa.mean((0, 1)), color='tab:blue', label=r'$P^a$ (varianza media)', zorder=100)
+# ax.set_ylabel('Posición')
+# plt.show()
+
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
 plt.subplots_adjust(hspace=0.1)
 ax1.plot(y[0, :], color='tab:red', marker='.', ls='None', label='Observaciones', zorder=100)

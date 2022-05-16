@@ -1,18 +1,15 @@
 TODOs
 
-- Introducción:
-    - Motivación e historia
+Introducción:
+- Motivación e historia
 
-- DA:
-    - Referencia a graphical models y como de esta interpretación se pueden deducir las propiedades del HMM (Jordan graphocal model learning)
-    - Interpretación de K (la Kalman gain) ejemplo undimensional y aclarar como juegan las incertezas de Q y R en K
-    - Efecto secuencial de DA: a medida que asimilás observaciones mejora la calidad de la inferencia porque por Bayes estaás condicionando a cada vez más datos y es como usar una muestra más grande ponele
-    - Introducir variacional como MAP (Bishop)
-    - 3DVAR Abarbanel
-    - Monte Carlo: introducir con la integral y después hacer la aproximación de la densidad. Montecarlo methods in scientific computing Liu 
-    - PF poner más del state-of-the-art:
-        - Localización con referencia a porterjoy connective local particle filter
-        - Flujos de partículas: Bunch Godsill optimal importance density y Daum Huang non linear filters homotopy
+DA:
+- Introducir variacional como MAP (Bishop)
+- 3DVAR Abarbanel
+- Monte Carlo: introducir con la integral y después hacer la aproximación de la densidad. Montecarlo methods in scientific computing Liu 
+- PF poner más del state-of-the-art:
+    - Localización con referencia a porterjoy connective local particle filter
+    - Flujos de partículas: Bunch Godsill optimal importance density y Daum Huang non linear filters homotopy
 
 Formalidades:
 - Error vs incerteza
@@ -22,3 +19,4 @@ Formalidades:
 - Figura vs Fig; Algo. vs Algoritmo; Ec. vs Ecuación (también decidir mayúscula o minúscula)
 - Nombres de secciones: acrónimos o no?
 - no-lineal vs no lineal vs nolineal
+- Se usa $S$ para estadísticos suficientes y para covs muestrales en fórmulas de Kalman
