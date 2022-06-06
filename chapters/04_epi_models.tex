@@ -41,7 +41,7 @@ En, general podemos distinguir 3 tipos distintos de compartimentos: aquellos que
 La incorporación de compartimentos le da gran adaptabilidad a estos modelos. Sin embargo, se considera que las subpoblaciones representadas en cada uno de estos compartimentos se mezcla de manera homogénea con lo cual no se representan los efectos que provienen de las complejidades del comportamiento de los individuos. Como veremos más adelante, los modelos basados en agentes se focalizan en modelar cada individuo de manera de dar cuenta de las consecuencias de las interacciones en esta micro-escala. Por otro lado, la representación mediante ecuaciones da la posibilidad de analizar formalmente el comportamiento del sistema para, por ejemplo, idententificar puntos de equilibrio, umbrales entre distintos tipos de soluciones o cálcuos explícitos del número reproducivo básico \citep{Murray2007}.
 
 Además de la incorporación de subpoblaciones relacionadas a los estados epidemiológicos, los modelos compartimentales pueden incluir otras características. Por ejemplo, se pueden utilizar variables espaciales acopladas a términos de difusión en las ecuaciones para representar la dispersión territorial de las enfermedades \citep{Noble1974}. También se utiliza estratificación por edades para diferenciar el efecto de la enfermedad en distintos sectores de la población y codificar el contacto entre los distintos rangos etarios \citep{Hethcote2000}. Además se puede modelar la espacialidad a través de la determinación de áreas, por ejemplo barrios en una ciudad, cada una con sus propias subpoblaciones de susceptibles, infectados etc. y describiendo la interacción entre estos lugares \citep{Klepac2018}. Con el advenimiento de la pandemia de COVID-19 se desarrollaron un gran número de modelos compartimentales con características especiales para expresar determinados rasgos propios de esta enfermedad y que se han utilizado para diversos fines tales como la estimación de parámetros epidemiológicos, la evaluación de medidas de control o la predicción de tendencias en los picos de contagios. Por ejemplo, el modelo de \cite{Evensen2020} utiliza estratificación por edades y compartimentos para representar de subpoblaciones bajo distintos tipos de cuarentena y es utilizado para estimar $R_0$ y hacer predicciones en distintos escenearios en diferentes países. El modelo de \cite{Arenas2020} también incluye estratificación por edades pero también incorpora patrones de movimiento en distintas regiones de España, compartimentos para los hospitalizados y otras cararterísticas incluídas para adaptar el esquema al COVID-19. En general, cuando tenemos una segmentación de la población en $K$ grupos (ya sea rango etario, locación o alguna otro) tenemos una réplica del sistema de ecuaciones por cada uno de ellos. La interacción entre estos se representa mediante una matriz $K \times K$. Si extendemos las ecuaciones del modelo SIR a un modelo multi-grupos tendremos las siguientes ecuaciones para $i=1, ..., K$:
-\begin{align} \label{eq:sir}
+\begin{align}
     \frac{\partial S_i}{\partial t} &= -\beta \sum_{j=1}^{K}c_{ij}\frac{S_i I_j}{N}\\
     \frac{\partial I_i}{\partial t} &= \beta \sum_{j=1}^{K}c_{ij}\frac{S_i I_j}{N} - \gamma I_i \\
     \frac{\partial R_i}{\partial t} &= \gamma I_i
@@ -59,7 +59,7 @@ A pesar de que las aplicaciones de técnicas de asimilación de datos a modelos 
 \paragraph{Ejemplo EnKF con online EM sobre modelo SEIRD} \
 
 Para mostrar algunas de las capacidades de el EnKF acoplado con el EM online en un modelo epidemiológico realizamos un experimento con observaciones sintéticas sobre un modelo SEIRD definido por las siguientes ecuaciones diferenciales:
-\begin{align}
+\begin{align} \label{eq:seird}
     \frac{\partial S}{\partial t} &= -\beta \frac{SI}{N}\\
     \frac{\partial E}{\partial t} &= \beta \frac{SI}{N} - \gamma_E E \\
     \frac{\partial I}{\partial t} &= \gamma_E E - \gamma_I I \\
@@ -98,24 +98,18 @@ Consideramos que las observaciones corresponden a los infectados acumulados y a 
         0 & 0 & 0 & 0 & 1 
     \end{pmatrix}.
 \end{align*}
-Al error observacional lo consideraremos Gaussiano y aditivo mientras que a $\v R_t$, la matriz que especifica su varianza a tiempo $t$, la consideraremos diagonal, es decir sin correlación entre los errores. La varianza para el error en la primera variable observada la tomaremos proporcional a los infectados confirmados diarios,  i.e., $(\v R_t)_{1,1} \propto I_{tot}(t) - I_{tot}(t-1)$. Análogamente, para la segunda variable observada tomamos $(\v R_t)_{2,2} \propto D(t) - D(t-1)$. El parámetro $\beta$ será definido como una función constante a trozos. En particular, tendrá un valor de $0.35$ en toda la ventana temporal excepto por el intervalo donde $t \in (400, 600)$ donde su valor será $0.3$. Esto tiene el efecto de que el número de casos aumente, después maine temporalmente para luego volver a crecer. Esta configuración para $\beta$ y $\v R_t$ se utilizará para generar las observaciones sintéticas pero será desconocida para el sistema de asimilación: $\beta$ se estimará mediante estado aumentado mientras que $\v R_t$ a través del EM \textit{online}.
-
-En la Figura \ref{fig:seird_online_em_aug_state_state_vars} se muestran los valores observados y reales de los infectados y muertos diarios junto con las correspondientes estimaciones. Se ve que el error observacional es proporcional al valor real como se especificó anteriormente y que las estimaciones de las variables sicronizan muy bien con los valores reales. El efecto de variación temporal sobre la tasa de infección $\beta$ explica el efecto de que el sistema produzca dos picos epidémicos. En la Figura \ref{fig:seird_online_em_aug_state_beta} se puede ver que las estimaciones de $\beta$ pueden capturar correctamente el cambio temporal del parámetro. Existe un retardo en las estimaciones para sincronizar luego de los cambios abruptos de la tasa de infección lo cual es habitual para técnicas de estado aumentado debido a que la asimilación tiene cierta inercia hacia valores previos y esto se corrige a medida que las observaciones se van asimilando. Finalmente, en la Figura \ref{fig:seird_online_em_aug_state_R} tenemos las estimaciones de $\v R_t$ producidas por el EM \textit{online} junto a los valores reales utilizados para generar las observaciones. A pesar de haber desvíos sustanciales de las estimaciones respecto a las trayectorias reales es evidente que el algoritmo EM percibe los cambios en $\v R_t$ y da aproximaciones que están en la misma escala. En este experimento utilizamos una tasa de aprendizaje $\alpha = 0.6$ lo que configura al algoritmo para tener ``poca memoria'' dándole más importancia a las observaciones que se están siendo procesadas y no tanto a las estimaciones anteriores. Realizamos réplicas de este mismo experimento con otros valores de $\alpha$ y se obtienen estimaciones menos ruidosas pero que reaccionan más lentamente a los cambios del parámetro.
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{figs/seird_online_em_aug_state_state_vars.eps}
     \caption{Trayectorias reales, observaciones y estimaciones para los infectados diarios (incidencia diaria) y muertos diarios utilizando el modelo SEIRD}
     \label{fig:seird_online_em_aug_state_state_vars}
 \end{figure}
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{figs/seird_online_em_aug_state_beta.eps}
     \caption{Valor real y estimaciones de la tasa de infección $\beta$}
     \label{fig:seird_online_em_aug_state_beta}
 \end{figure}
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{figs/seird_online_em_aug_state_R.eps}
@@ -123,6 +117,30 @@ En la Figura \ref{fig:seird_online_em_aug_state_state_vars} se muestran los valo
     \label{fig:seird_online_em_aug_state_R}
 \end{figure}
 
-\section{Modelos basados en agentes}
+En la Figura \ref{fig:seird_online_em_aug_state_state_vars} se muestran los valores observados y reales de los infectados y muertos diarios junto con las correspondientes estimaciones. Se ve que el error observacional es proporcional al valor real como se especificó anteriormente y que las estimaciones de las variables sicronizan muy bien con los valores reales. El efecto de variación temporal sobre la tasa de infección $\beta$ explica el efecto de que el sistema produzca dos picos epidémicos. En la Figura \ref{fig:seird_online_em_aug_state_beta} se puede ver que las estimaciones de $\beta$ pueden capturar correctamente el cambio temporal del parámetro. Existe un retardo en las estimaciones para sincronizar luego de los cambios abruptos de la tasa de infección lo cual es habitual para técnicas de estado aumentado debido a que la asimilación tiene cierta inercia hacia valores previos y esto se corrige a medida que las observaciones se van asimilando. Finalmente, en la Figura \ref{fig:seird_online_em_aug_state_R} tenemos las estimaciones de $\v R_t$ producidas por el EM \textit{online} junto a los valores reales utilizados para generar las observaciones. A pesar de haber desvíos sustanciales de las estimaciones respecto a las trayectorias reales es evidente que el algoritmo EM percibe los cambios en $\v R_t$ y da aproximaciones que están en la misma escala. En este experimento utilizamos una tasa de aprendizaje $\alpha = 0.6$ lo que configura al algoritmo para tener ``poca memoria'' dándole más importancia a las observaciones que se están siendo procesadas y no tanto a las estimaciones anteriores. Realizamos réplicas de este mismo experimento con otros valores de $\alpha$ y se obtienen estimaciones menos ruidosas pero que reaccionan más lentamente a los cambios del parámetro.
 
-\subsection{Modelo SEIHRD}
+Al error observacional lo consideraremos Gaussiano y aditivo mientras que a $\v R_t$, la matriz que especifica su varianza a tiempo $t$, la consideraremos diagonal, es decir sin correlación entre los errores. La varianza para el error en la primera variable observada la tomaremos proporcional a los infectados confirmados diarios,  i.e., $(\v R_t)_{1,1} \propto I_{tot}(t) - I_{tot}(t-1)$. Análogamente, para la segunda variable observada tomamos $(\v R_t)_{2,2} \propto D(t) - D(t-1)$. El parámetro $\beta$ será definido como una función constante a trozos. En particular, tendrá un valor de $0.35$ en toda la ventana temporal excepto por el intervalo donde $t \in (400, 600)$ donde su valor será $0.3$. Esto tiene el efecto de que el número de casos aumente, después maine temporalmente para luego volver a crecer. Esta configuración para $\beta$ y $\v R_t$ se utilizará para generar las observaciones sintéticas pero será desconocida para el sistema de asimilación: $\beta$ se estimará mediante estado aumentado mientras que $\v R_t$ a través del EM \textit{online}.
+
+Como demostración de la potencial viabilidad de la técnica en modelos epidemiológicos realizamos otro experimento similar pero utilizando los datos de COVID-19 en Argentina provistos por el Ministerio de Salud. El experimento tiene una configuración similar al de observaciones sintéticas que describimos anteriormente pero incorporamos además la tasa de mortalidad que llamaremos $\gamma_D$ y es computable como $(1-\alpha) \gamma_I I$ según las Ecuaciones \ref{eq:seird}. En la Figura \ref{fig:seird_vars_arg_data} se grafican los infectados y muertos diarios observados y estimados. Las trayectorias estimadas están prácticamente superpuestas a las observaciones y la escala impide apreciar la dispersión del ensamble sin embargo este no está colapsado. Las estimaciones de $\beta$ y $\gamma_D$ están en la Figura \ref{fig:seird_params_arg_data}. El comportamiento de la tasa de infección muestra picos al rededor de los picos de casos, notablemente en el que corresponde a finales de 2021. Por otro lado la tasa de mortalidad es mucho mayor al comienzo de la ventana temporal y se va reduciendo en el tiempo de manera que el incremento en muertos en la última ola se explicaría según este modelo por el aumento de casos pero no por una mayor letalidad de la enfermedad. Finalmente, en la Figura \ref{fig:seird_R_arg_data} se pueden ver las estimaciones de las varianzas de los errores observacionales $(\v R_t)_{1,1}$ y $(\v R_t)_{2, 2}$. El error que corresponde a la primera variable observada, los infectados acumulados, tiene un pico notable alrededor de la primera ola y otro en la ola de finales de 2021. Por su parte, el error que corresponde a los fallecidos acumulados es mayor al comienzo de la pandemia y luego se reduce y se estabiliza.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{figs/seird_online_em_aug_state_state_vars_arg_data.eps}
+    \caption{Observaciones y estimaciones para los infectados diarios (incidencia diaria) y muertos diarios utilizando el modelo SEIRD sobre los datos de COVID-19 en Argentina}
+    \label{fig:seird_vars_arg_data}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{figs/seird_online_em_aug_state_params_arg_data.eps}
+    \caption{Estimaciones de la tasa de infección $\beta$ y la tasa de fatalidad $\gamma_D$}
+    \label{fig:seird_params_arg_data}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{figs/seird_online_em_aug_state_R_arg_data.eps}
+    \caption{Estimaciones del EM online de las varianzas de errores observacionales. Estas corresponden a los dos valores de la diagonal de las matrices de covarianzas $\v R_t$}
+    \label{fig:seird_R_arg_data}
+\end{figure}
+
+Diseñamos estos experimentos para mostrar la potencial viabilidad del EM \textit{online} para estimación de errores en sistemas de asimilación de datos sobre modelos epidemiológicos. Este aspecto es habitualmente pasado por alto en trabajos de inferecia mediante en este tipo de sistema. Los resultados dependen de la elección de las caminatas aleatorias en los parámetros dentro del estado aumentado ya que estos tienen el efecto de inyectar error de modelo al sistema. En el experimento con observaciones sintéticas, salvo por la parametrización que se calibra con estado aumentado, el modelo utilizado es el mismo que se usa para generar los datos. En el caso de tener datos reales no es posible especificar un modelo perfecto por lo que los parámetros en el estado aumentado cumplen el rol de calibrar otras posibles deficiencias del modelo. Una posibilidad es incorporar error de modelo aditivo y estimar su matriz de covarianza $\v Q_t$ con el EM \textit{online} y de hecho algunos experimentos preliminares sigieren que esto es posible. Además las varianzas de las caminatas aleatorias en el estado aumentado podrían potencialmente ser estimadas de manera adaptativa como parte de la matriz $\v Q_t$. Otra posibilidad más sencilla para dar cuenta del error de modelo es la utilización de un factor de inflación en el ensable (ver Sección \ref{sec:enkf}). La aplicación del EM \textit{online} en estos sistemas es un trabajo que quedó inconcluso en el transcurso de esta tesis pero que marca una dirección posible de investigación.
