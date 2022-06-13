@@ -21,6 +21,50 @@ Con el surgimiento de la pandemia de COVID-19 se han desarrollado una gran diver
 
 A pesar de la flexibilidad y expresividad que permite el modelado mediante agentes, sigue siendo necesario calibrarlos adecuadamente. En general, el aumento en complejidad viene acompañado de un aumento en el número de parámetros, los cuales no siempre son especificables a través del conocimento que se tenga sobre el sistema. Ha habido avances en el desarrollo de técnicas de inferencia para estimar parámetros en ABMs utilizando observaciones sobretodo orientados a la maximización de la verosimilitud. En particular en \cite{Hooten2020} se discuten una variedad de métodos para maximizar aproximaciones de la verosimilitud usando cómputo bayesiano aproximado (o ABM por \textit{Approximate Bayesian Computation}) junto con técnicas de MCMC (\textit{Markov Chain Monte Carlo}).
 
-Como los ABMs se enmarcan en un contexto de sistemas con evolución temporal parcialmente observados, es posible pensar que la caja de herramientas provista por la asimilación de datos secuencial tiene potencial para realizar las tareas de inferencia. Un trabajo pionero en esta dirección es \cite{Ward2016} en el que se utiliza el EnKF para asimilar datos de cámaras de pisadas en calles Leeds con un modelo de agentes para estudiar el comportamiento del tráfico peatonal. A pesar de obtener resultados satisfactorios, se señala la dificultad asociada a la sensiblidad respecto a parámetros del modelo y la necesidad optimizar el código para modelos de gran tamaño. Como mencionamos anteriormente, el interés no necesariamente está puesto en estado de cada individuo sino en el estado global del sistema o deun conjunto de variables que den una descripción de la población de agentes que se considere relevante. Además, a pesar de que el estado a la escala microscópica determina de manera total al sistema y que el objetivo de la inferencia fuera, idealmente, representar esta escala de la manera más precisa posible, sucede que usualmente las observaciones que se tienen del sistema son de las varables sintetizantes, es decir de la escala macroscópica. Es decir, las observaciones pueden no tener suficiente ``resolución'' como para que se pueda determinar el estado de los atributos de cada agente. Nuestra propuesta, publicada en \cite{Cocucci2022}, es la de asimilar datos sobre las variables agregadas mediante técnicas basadas en ensambles. El mapeo de la escala microscópica a macroscópica está dado por la función sintetizante $\phi$ pero no tenemos una representación para su inversa. De hecho $\phi$ puede no ser inyectiva y por lo tanto no-invertible: muchas configuraciones de los agentes pueden resultar en el mismo estado de las variables agregadas. Esta situación debe considerarse para hacer un emparejamiento entre los estados macroscópicos observados y el estado de los atrbutos de los individuos.
+Como los ABMs se enmarcan en un contexto de sistemas con evolución temporal parcialmente observados, es posible pensar que la caja de herramientas provista por la asimilación de datos secuencial tiene potencial para realizar las tareas de inferencia. Un trabajo pionero en esta dirección es \cite{Ward2016} en el que se utiliza el EnKF para asimilar datos de cámaras de pisadas en calles Leeds con un modelo de agentes para estudiar el comportamiento del tráfico peatonal. A pesar de obtener resultados satisfactorios, se señala la dificultad asociada a la sensiblidad respecto a parámetros del modelo y la necesidad optimizar el código para modelos de gran tamaño. Como mencionamos anteriormente, el interés no necesariamente está puesto en estado de cada individuo sino en el estado global del sistema o deun conjunto de variables que den una descripción de la población de agentes que se considere relevante. Además, a pesar de que el estado a la escala microscópica determina de manera total al sistema y que el objetivo de la inferencia fuera, idealmente, representar esta escala de la manera más precisa posible, sucede que usualmente las observaciones que se tienen del sistema son de las varables sintetizantes, es decir de la escala macroscópica. Es decir, las observaciones pueden no tener suficiente ``resolución'' como para que se pueda determinar el estado de los atributos de cada agente. Nuestra propuesta, publicada en \cite{Cocucci2022}, es la de asimilar datos sobre las variables agregadas mediante técnicas basadas en ensambles. El mapeo de la escala microscópica a macroscópica está dado por la función sintetizante $\phi$ pero no tenemos una representación para su inversa. De hecho $\phi$ puede no ser inyectiva y por lo tanto no-invertible: muchas configuraciones de los agentes pueden resultar en el mismo estado de las variables agregadas. Esta situación debe considerarse para hacer un emparejamiento entre los estados macroscópicos observados y el estado de los atributos de los individuos. En este capítulo presentamos un esquema general de aplicación de métodos de asimilación de datos por ensambles para ABMs y dos implementaciones particulares para un ABM epidemiológico que también especificamos a continuación.
 
-\subsection{Modelo SEIHRD}
+\section{Modelo epiABM}
+
+Aquí especificamos un ABM epidemiológico diseñado para modelar la dinámica de contagio de enfermedades infecciosas, en particular para el COVID-19 y que denominaremos epiABM. Este es un modelo sencillo para evaluar el rendimiento de la metodología para aplicar asimilación de datos por ensambles en ABMs y no tiene el propósito de ser un modelo para realizar predicciones o asesorar en toma de decisiones.
+
+El estado de salud de cada agente está descripto por una etiqueta para representar una entre siete categorías. Tenemos a los susceptibles a contraer la enfermedad ($S$), los expuestos a la enfermedad pero que aún no son infecciosos debido a que el virus está incubando ($E$). Después de considerarse expuestos pasan a una de dos posibles clases de infecciosos. Los infectados leves ($I_M$) son los que desarrollan una sintomatología que no requiere hospitalización y que eventualmente se recuperan. Los infectados graves ($I_S$) son los que requerirán hospitalización. Por su parte, los hospitalizados pueden recuperarse o morir. La categoría $R$ denomina a los recuperados y la $D$ a los muertos. Asumimos que los recuperados adquieren inmunidad permanente, lo cual no es una suposición realista para simulaciones a largo plaze de COVID-19 puesto que las reinfecciones son posibles. El diagrama de la figura \ref{dia:epi_abm} representa de manera esquemática la progresión de la enfermedad a través de estos estadíos.
+
+\begin{figure}
+    \begin{center}
+        \tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+        text width=4em, text centered, rounded corners, minimum height=3em]
+        \tikzset{line/.style={draw, very thick, color=black!100, -latex'}}
+        \centering
+        \begin{tikzpicture}[node distance = 2cm, auto]
+            \tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+            text width=2em, text centered, rounded corners, minimum height=3em]
+            
+            % Place nodes
+            \node [block] (S) {$S$};
+            \node [block, right of=S] (E) {$E$};
+            \node [block, above right = 0.05cm and 1cm of E] (IM) {$I_M$};
+            \node [block, below right = 0.05cm and 1cm of E] (IS) {$I_S$};
+            \node [block, right of=IS] (H) {$H$};
+            \node [block, right of=H] (D) {$D$};
+            \node [block] (R) at (IM-|D) {$R$};
+            
+            % Draw edges
+            \draw[line] (S) -- (E);
+            \draw[line] (E) |- node [below] {$q_S$} (IS);
+            \draw[line] (E) |- node [above] {$1-q_S$} (IM);
+            \draw[line] (IM) -- (R);
+            \draw[line] (IS) -- (H);
+            \draw[line] (H) -- node [above] {$q_D$} (D);
+            \draw[line] (H) -- node [left = 0.01cm] {$1-q_D$} (R);
+        \end{tikzpicture}
+    \end{center}
+    \caption{Diagrama de las categorías epidemiológicas dee modelo epiABM.}
+    \label{dia:epi_abm}
+\end{figure}
+
+En cada paso temporal, que consideraremos de un día, cada agente tendrá un número de contactos muestreado de una distribución Poisson de parámetro $\lambda$. Los agentes susetibles podrán resultar infectados por un contacto con un agente infeccioso:
+
+
+\section{Asimilación de datos en ABMs}
+
+\section{Experimentos}
