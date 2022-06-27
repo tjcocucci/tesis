@@ -165,14 +165,106 @@ Consideramos que los agentes tienen contactos casuales con mayor probabilidad de
 
 \subsubsection{Número de contactos variable}
 
-El número de contactos que tiene un agente por día está codificado a través del parámetro $\lambda$. En este experimento consideramos que el valor real de este parámetro disminuye linealmente en el tiempo y en el sistema de inferencia lo estimamos mediante estado aumentado. Utilizamos $N_a = 3 \cdot 10^4$ agentes.
+El número de contactos que tiene un agente por día está codificado a través del parámetro $\lambda$. En este experimento consideramos que el valor real de este parámetro disminuye linealmente en el tiempo y en el sistema de inferencia lo estimamos mediante estado aumentado.
 
-La Figura \ref{} muestra los resultados de las variables de estado reales y estimadas por el EnKF. Se puede ver que el ensamble estima correctamente a las trayectorias reales. El ensamble que estima las muertes acumuladas tiene muy poca varianza, esto se debe a que esta variable es directamente observada y con un error observacional relativamente pequeño. El resto de las variables no son observadas y sus estimaciones se logran a través del uso de las correlaciones con las variables observadas que hace el EnKF. En la Figura \ref{} se grafican la trayectoria real y las del ensamble para $\lambda$. Las estimaciones capturan el cambio en el parámetro luego de un tiempo inicial de spin-up en que el sistema de asimilación sincroniza con las observaciones a medida que las incorpora. Alrededor del pico epidémico es cuando la varianza de las estimaciones es menor y luego de eso comienza a amplificarse. Esto se debe a que las observaciones son más informativas de $\lambda$ (a través de correlaciones) cuando el número de infecciones es mayor. A medida que el número de infecciones disminuye la incerteza en las estimaciones comienza a crecer. La media del ensamble inicial se elije adrede en un valor distinto al valor real inicial de $\lambda$ ya que el parámetro se supone desconocido. Por otro lado, consideramos una varianza inicial grande para que el ensamble pueda explorar mejor el espacio paramétrico. A medida que crece la correlación entre las variables observadas y el parámetro, esta varianza se comienza a encoger. En todos los casos se muestran los resultados para la redistribución aleatorizada pero estos son similares con la cascada hacia atrás.
+La Figura \ref{fig:abm_state_vars_moving_lambda} muestra los resultados de las variables de estado reales y estimadas por el EnKF. Se puede ver que el ensamble estima correctamente a las trayectorias reales. El ensamble que estima las muertes acumuladas tiene muy poca varianza, esto se debe a que esta variable es directamente observada y con un error observacional relativamente pequeño. El resto de las variables no son observadas y sus estimaciones se logran a través del uso de las correlaciones con las variables observadas que hace el EnKF. En la Figura \ref{fig:abm_moving_lambda} se grafican la trayectoria real y las del ensamble para $\lambda$. Las estimaciones capturan el cambio en el parámetro luego de un tiempo inicial de spin-up en que el sistema de asimilación sincroniza con las observaciones a medida que las incorpora. Alrededor del pico epidémico es cuando la varianza de las estimaciones es menor y luego de eso comienza a amplificarse. Esto se debe a que las observaciones son más informativas de $\lambda$ (a través de correlaciones) cuando el número de infecciones es mayor. A medida que el número de infecciones disminuye la incerteza en las estimaciones comienza a crecer. La media del ensamble inicial se elije adrede en un valor distinto al valor real inicial de $\lambda$ ya que el parámetro se supone desconocido. Por otro lado, consideramos una varianza inicial grande para que el ensamble pueda explorar mejor el espacio paramétrico. A medida que crece la correlación entre las variables observadas y el parámetro, esta varianza se comienza a encoger. En todos los casos se muestran los resultados para la redistribución aleatorizada pero estos son similares con la cascada hacia atrás.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_state_vars_moving_lambda.eps}
+    \caption{}
+    \label{fig:abm_state_vars_moving_lambda}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_moving_lambda.eps}
+    \caption{}
+    \label{fig:abm_moving_lambda}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_housing_dist_moving_lambda.eps}
+    \caption{}
+    \label{fig:abm_housing_dist_moving_lambda}
+\end{figure}
 
-La estructura dada por la distribución de agentes en hogares no es informada de manera directa por las observaciones puesto que estas solo están diferenciadas por barrio. El sistema sin embargo mantiene una población de agentes por cada miembro de ensamble y es posible evaluar cómo se distribuyen las infecciones en los distintos tipos de hogares. Nuestra parametrización del modelo considera casas desde un solo habitante hasta un máximo de cinco. En cada día de asimilación computamos qué proporción de infectados corresponde a cada tamaño de hogar: los resultados se muestran en la figura \ref{}. Cuando hay menos infecciones, es decir antes y después del pico epidémico las estimaciones tienen varianza más alta y son menos precisas mientras que durante el pico de infecciones la dispersión es mucho menor y las estimaciones más certeras. Podemos comparar la proporción de infectados en cada tipo de hogar con la proporción total de agentes en cada tio de hogar sin importar su estado epidemiológico. En casas más pequeñas la proporción estimada de infecciones es menor a la proporción de agentes residentes en ese tipo de hogar. Lo opuesto sucede en casas de mayor tamaño. Esto se debe a que debido a los contactos domésticos la infección se dispersa con mayor rapidez en hogares con más habitantes. A su vez, la proporción de infectados en hogares más grandes es mayor al comienzo de la epidemia y menor hacia el final porque son los hogares que más rápidamente se saturan de inmunes (por infectarse más rápidamente). 
+La estructura dada por la distribución de agentes en hogares no es informada de manera directa por las observaciones puesto que estas solo están diferenciadas por barrio. El sistema sin embargo mantiene una población de agentes por cada miembro de ensamble y es posible evaluar cómo se distribuyen las infecciones en los distintos tipos de hogares. Nuestra parametrización del modelo considera casas desde un solo habitante hasta un máximo de cinco. En cada día de asimilación computamos qué proporción de infectados corresponde a cada tamaño de hogar: los resultados se muestran en la Figura \ref{fig:abm_housing_dist_moving_lambda}. Cuando hay menos infecciones, es decir antes y después del pico epidémico las estimaciones tienen varianza más alta y son menos precisas mientras que durante el pico de infecciones la dispersión es mucho menor y las estimaciones más certeras. Podemos comparar la proporción de infectados en cada tipo de hogar con la proporción total de agentes en cada tio de hogar sin importar su estado epidemiológico. En casas más pequeñas la proporción estimada de infecciones es menor a la proporción de agentes residentes en ese tipo de hogar. Lo opuesto sucede en casas de mayor tamaño. Esto se debe a que debido a los contactos domésticos la infección se dispersa con mayor rapidez en hogares con más habitantes. A su vez, la proporción de infectados en hogares más grandes es mayor al comienzo de la epidemia y menor hacia el final porque son los hogares que más rápidamente se saturan de inmunes (por infectarse más rápidamente).
 
 \subsubsection{Seguimiento de la microescala}
 
+Realizamos un experimento en el que evalúamos, en distintos niveles de agrupamiento, qué cantidad de agentes coinciden en su estado epidemiológico,  comparando entre las estimaciones y la corrida real. El objetivo del experimento es comparar la evolución del estado en la micro-escala entre la población real de agentes y las de los miembros del ensamble. Contaremos la cantidad de agentes que tienen el mismo estado epidemiológico pero considerando diferentes agrupamientos de agentes. Cada agente tiene un número de identificación (id); la primera métrica consistirá en comparar el estado epidemoiológico de los agentes id por id. La segunda métrica consistirá en comparar casa por casa para chequear coincidencias. Para la tercera métrica agruparemos los agentes de acuerdo al tamaño de hogar en el que habitan. La última métrica agrupa agentes de acuerdo al tamaño de hogar y el barrio en que habitan. La única métrica que distingue agentes por su id es la primera, para el resto contamos las coincidencias simplemente contantdo la cantidad de agentes en la misma categoría epidemiológica. Utilizamos $N_{loc} = 4$ barrios y en lugar de utilizar un valor de $\lambda$ global consideramos un valor distinto para cada locación, de manera que tenemos un vector de $N_{loc}$ componentes $\lambda = (1.0, 0.8, 0.9, 0.7)$. 
 
+La configuración inicial de los agentes para la corrida real y los miembros del ensamble es la misma por lo que al comienzo el porcentaje de coincidencias es 100\% para todas las métricas. Para evaluar el impacto de la asimilación  producimos además 100 simulaciones sin ningún tipo de asimilación para poder comparar los resultados. Estas darán diferentes resultados que la trayectoria real debido a la estocasticidad del modelo.
+
+La Figura \ref{fig:abm_matchings} muestra los resultados para ambos métodos de ajuste de los agentes y para las simulaciones sin asimilación de datos. Cada panel muestra una de las métricas. La metodología de redistribución aleatorizada y de cascada hacia atrás producen resultados similares en todos los casos. Las trayectorias de las métricas para las corridas independientes tienen una gran dispersión mientras que cuando se asimilan datos estas están contenidas. Para las métricas de id de agentes y de casas, que son las que evalúan a una escala más microscópica, se puede ver que el porcentaje de coincidencias cae, se recupera un poco y finalmente se estabiliza tanto para las corridas con EnKF como para las simulaciones independientes. Estas últimas son ligeramente más consistentes con la corrida real en la primera etapa en que todas las métricas caen. Esto es posiblemente debido a que la metodología de ajuste debe modificar el estado de agentes para lograr la consistencia con las variables macroscópicas mientras que las simulaciones independientes mantienten en mayor medida la estructura inicial de la población de agentes.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_matchings.pdf}
+    \caption{}
+    \label{fig:abm_matchings}
+\end{figure}
+
+En la escala de tamaños de hogares el EnKF mantiene un porcentaje alto de coincidencias (mayor al 90\% para ambas metodologías de ajuste). En cambio, las simulaciones independientes muestran una gran variabilidad. El resultado para la métrica que agrupa por tipo de hogar y barrio da resultados similares. Algunas de las trayectorias de las simulaciones independientes tendrán picos epidémicos que no coinciden con el de la trayectoria real por lo que es esperable que las métricas para estas corridas decrezcan. El porcentaje de coicidencias luego se recupera puesto que el tamaño final de la epidemia será similar para la corrida real y las simulaciones y la mayor parte de los agentes estará en la categoría de susceptibles o recuperados. Por su parte, para el EnKF tenemos un buen nivel de coincidencias para estas métricas debido a que al asimilar datos, las trayectorias del ensamble pueden detectar el pico epidémico y sincronizar con el estado real en esta escala. Es importante notar que las observaciones en estos experimentos están separadas por barrio pero no son explícitamente informativas respecto a las infecciones en distintos tamaños de hogar. Aún así el porcentaje de coincidencias es bastante alto para estas métricas. La proporción de coincidencias considerando ids de agentes o agrupando por casas particulares es similar usando asimilación de datos o no haciéndolo. Esto es posiblemente porque los ids de agentes o de casas no juegan un rol particular en las dinámicas de contagio. En cambio, el tipo de hogar sí tiene un efecto en la dispersión de la enfermedad y por lo tanto este es capturado por el EnKF.
+
+\subsubsection{Estimación de casos no detectados}
+
+Es esperable que los datos de infecciones de COVID-19 estén afectados por el subreporte de casos debido a que existen muchos casos muy leves o incluso asintomáticos. Para evaluar este escenario modificamos levemente nuestro modelo y consideramos que las infecciones leves tienen una posibilidad $q_A$ de ser asintomáticos y por lo tanto no ser reportados. Para el experimento utilizamos una configuración similar a la de los experimentos anteriores pero tomando un valor fijo de $\lambda = 0.8$ e introduciendo $q_A$ en el estado aumentado. Para dar cuenta de los asintomáticos agregamos dos nuevas categorías epidemiológicas: los infectados asintomáticos $I_A$ y los recuperados de una infección asintomática $R_A$. El diagrama de las categorías epidemiológicas se puede representar entonces como en la Figura \ref{dia:abm_unobserved}. También sería posible simular un escenario similar considerando coeficientes desconocidos en el operador observacional $\v H_t$ que serían estimados mediante estado aumentado.
+
+\begin{figure}[h]
+    \captionsetup{width=0.5\textwidth}
+    \begin{center}
+        \tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+        text width=4em, text centered, rounded corners, minimum height=3em]
+        \tikzset{line/.style={draw, very thick, color=black!100, -latex'}}
+        \centering
+        \begin{tikzpicture}[node distance = 2cm, auto]
+            \tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+            text width=2em, text centered, rounded corners, minimum height=3em]
+            
+            % Place nodes
+            \node [block] (S) {$S$};
+            \node [block, right of=S] (E) {$E$};
+            \node [block, above right = 0.75cm and 4cm of E] (IA) {$I_A$};
+            \node [block, right = 4cm of E] (IM) {$I_M$};
+            \node [block, below right = 0.75cm and 4cm of E] (IS) {$I_S$};
+            \node [block, right of=IS] (H) {$H$};
+            \node [block, right of=H] (D) {$D$};
+            \node [block] (R) at (IM-|D) {$R$};
+            \node [block] (RA) at (IA-|R) {$R_A$};
+
+            % Draw edges
+            \draw[line] (S) -- (E);
+            \draw[line] (E) |- ++(2.5cm,1cm) |- node [above right = 0cm and 0.4cm, align=center] {$q_A$} (IA);
+            \draw[line] (E) |- node [above right = 0cm and 0.8cm, align=center] {$1-q_S$} ++(2.5cm,1cm) |- node [above right = 0cm and 0.4cm, align=center] {$1-q_A$} (IM);
+            \draw[line] (E) |- node [above right = 0cm and 0.8cm, align=center] {$q_S$} (IS);
+            \draw [line] (IM) -- (R);
+            \draw [line] (IA) -- (RA);
+            \draw [line] (IS) -- (H);
+            \draw [line] (H) -- (D);
+            \draw [line] (H) -- node [left = 0.01cm] {$1-q_D$} (R);
+            \draw [line] (H) -- node [below] {$q_D$} (D);
+        \end{tikzpicture}
+    \end{center}
+    \caption{Diagrama para el epiABM con asintomáticos}
+    \label{dia:abm_unobserved}
+\end{figure}
+
+Las variables observadas serán los confirmados acumulados como la suma de $I_M$, $I_S$, $R$ y $D$ y los muertos acumulados, $D$. Además incorporaremos una nueva variable observacional que llamaremos positividad global. Notemos que para los casos confirmados no incorporamos ni a $I_A$ ni a $R_A$ puesto que estos casos pasarían en principio inadvertidos para el sistema de reportes. La positividad global será el resultado de un testeo diario aleatorio a un porcentaje fijo de la población. Los tests darán positivos para $I_M$, $I_S$, $I_A$ y $H$ por lo que estas observaciones si podrán capturar algo de información respecto a la cantidad de asintomáticos. Los tests son globales y no están separados por locación por lo que dan una idea de la circulación global del virus. El error observacional de esta variable no será Gaussiano aditivo sino que será el error de muestreo que resulta de la aleatoreidad de los tests. Asumimos que un 1\% de la población es testeada cada día. En la práctica los testeos no se suelen hacer completamente al azar sino que se hacen sobre casos posibles pero estos valores podrían ser utilizados para calcular aproximaciones de la positividad global. El valor de $q_A$ será estimado mediante estado aumentado y se espera que las correlaciones de la positividad global con este parámetro permitan su inferencia.
+
+La Figura \ref{fig:abm_tests} muestra los resultados para los infectados leves, los asintomáticos y la positividad global y el testeo. El comportamiento de los asintomáticos es capturado por el EnKF pero como es de esperarse las estimaciones de los infectados leves son más precisas. Esto es porque los asíntomáticos son solo informados a través de la positividad global
+mientras que los infectados leves también son observados mediante los infectados acumulados por barrio. La discrepancia entre los asintomáticos y el valor real de esta variable está correlacionada con la discrepancia entre la positividad global y estimada. Esto sugiere que mientras más sepamos sobre la circulación general del virus, mejor podrá ser la inferencia sobre los casos no reportados. La Figura \ref{fig:abm_tests_asymptomatic_prob} muestra las estimaciones de la probabilidad $q_A$. Se ve en los primeros ciclos de spin-up una reducción de la varianza inicial y luego el ensamble sincroniza con el valor real. Cuando la positividad es menor, antes y después del pico epidémico, la varianza del ensamble es mayor que durante el pico epidémico en donde las estimaciones son más precisas y de menos varianza. Este efecto se debe a que la positividad sólo será informativa de la proporción de asintomáticos en la medida que haya suficientes casos como para que las correlaciones entre los testeos y el parámetro sean lo suficientemente fuertes.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_tests.eps}
+    \caption{}
+    \label{fig:abm_tests}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_tests_asymptomatic_prob.eps}
+    \caption{}
+    \label{fig:abm_tests_asymptomatic_prob}
+\end{figure}
 
 \subsection{Datos CABA, Argentina}
