@@ -270,7 +270,6 @@ mientras que los infectados leves también son observados mediante los infectado
 En este experimento buscamos evaluar si la metodología es lo suficientemente robusta como para responder en situaciones en que el modelo está erróneamente especificado. Para ello diseñamos el experimento de manera que la corrida natural y las del EnKF tienen configuraciones diferentes. Para generar las observaciones sintéticas, el número de contactos diarios va a ser muestreado, no de una Poisson como hicimos hasta ahora, sino de una distribución geométrica con parámetro $p = 0.5$. Por el otro lado, para la inferencia con EnKF usaremos la distribución de Poisson como en experimentos anteriores. Adicionalmente usaremos distintas distribuciones de hogares: para la corrida natural tomaremos $p_H = (0.33, 0.27, 0.2, 0.13, 0.07)$ lo que resulta en que las casas con más agentes son más infrecuentes que las que tienen menos habitantes, lo cual es esperable en un medio urbano. Para el EnKF utilizaremos esta distribución pero también repetiremos el experimento con una distribución uniforme de hogares $p_H = (0.2, 0.2, 0.2, 0.2, 0.2)$ y otra ``desbalanceada'' $p_H = (0.07, 0.13, 0.2, 0.27, 0.33)$ en la que los hogares de más habitantes son más frecuentes que los de menos. La utilización de ditribuciones de hogares diferentes va a resultar en distintas dinámicas de propagación debido a la variación en la estructura de la red de contactos. El parámetro $\lambda$ se estima mediante estado aumentado.
 
 La Figura \ref{fig:abm_housing_dist_KL} muestra las trayectorias de las estimaciones de $\lambda$ para los distintos escenarios de distribución de hogares. La distribución para el número de contactos para el EnKF es una Poisson mientras que para la corrida real es geométrica, por lo tanto la estimación de $\lambda$ debería parametrizar al número de contactos diarios de manera que se parezca lo más posible a una geométrica. Para evaluar el parecido entre distribuciones entonces calculamos para una grilla de valores de $\lambda$ la divergencia de Kullback-Leibler (KL) entre la Poisson y la verdadera distribución geométrica. Esta cantidad codifica cuánta información se pierde al utilizar la distribución Poisson respecto a la geométrica. En la Figura \ref{fig:abm_housing_dist_KL} también se muestra la divergencia KL junto con las estimaciones de $\lambda$. Estas están en regiones de baja divergencia KL: esto significa que el sistema se auto-calibra buscando el valor de $\lambda$ que mejor pueda reproducir las características del modelo original. La mejor estimación en términos de divergencia KL es para la corrida que utiliza la distribución real de hogares, lo cual es esperable. La distribución uniforme de hogares tiene más casas de mayor tamaño y la desbalanceada aún más. Debido a los contactos doméstico esto causa una dispersión más rápida de la enfermedad. El hecho de que las estimaciones de $\lambda$ sea menor en estos casos se debe a que el sistema se auto-calibra y por lo tanto compensa por la distribución de hogares incorrecta que produce un mayor número de contactos domésticos (que son más contagiosos).
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_housing_dist_KL.eps}
@@ -279,3 +278,38 @@ La Figura \ref{fig:abm_housing_dist_KL} muestra las trayectorias de las estimaci
 \end{figure}
 
 \subsection{Datos CABA, Argentina}
+
+Para evaluar el sistema con datos realistas realizamos un experimento con los datos de COVID-19 de CABA, Argentina, provistos por el Ministerio de Salud y publicados con actualizaciones diarias en \url{https://data.buenosaires.gob.ar}. La distribución de hogares y la población es tomada de datos censales disponibles en el mismo sitio. CABA se divide en 15 comunas. Tomaremos a cada una de ellas como un barrio para el modelo (a pesar de que cada comuna puede estar compuesta por más de un barrio). Los datos están agrupados de acuerdo a las distintas comunas. Utilizaremos como observaciones sobre el sistema a los infectados acumulados y las muertes acumuladas. Consideraremos que el parámetro $\lambda$ es el mismo para todas las comunas y lo estimaremos mediante estado aumentado. Para la matriz de contacto consideraremos que la mitad de los contactos casuales son dentro de la misma comuna y la otra mitad están distribuidos de manera proporcional a la densidad poblacional de las otras comunas. Utilizamos $N_a = 3 \cdot 10^5$ agentes pero la población de CABA es aproximadamente $3 \cdot 10^6$ por lo que escalamos hacia abajo los datos en 10.
+
+La Figura \ref{fig:abm_caba_data_lambda} muestra las estimaciones de $\lambda$. Como este parámetro codifica el número de contactos que un agente tiene por día es esperable que esté correlacionado con el número de infecciones confirmadas diarias y de hecho se puede ver que tienen una tendencia similar. Esto sucede porque las probabilidades de infección, $\beta_C$ y $\beta_D$, se consideran constantes durante la simulación por lo que los cambios en las infecciones diarias van a ser explicados por cambios en $\lambda$ con el correspondiente desfasaje debido al tiempo de incubación. La evolución de la tasa de contactos estimada es consistente con los tres picos epidémicos en Argentina hasta mediados de 2021.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_caba_data_lambda.eps}
+    \caption{}
+    \label{fig:abm_caba_data_lambda}
+\end{figure}
+
+Es importante notar que sólo estimamos el parámetro $\lambda$ dejando al resto fijo, cuando en realidad existen múltiples efectos que pueden influir en la propagación de la enfermedad. Esto significa que el ajuste del modelo a los datos se da a través de $\lambda$ a pesar de que puede haber sido otro fenómeno el que provocó un determinado cambio en la tendencia de los datos. Por ejemplo, una disminución de los casos causada por el mayor uso de tapabocas debería ser representado mediante una baja en la probabidad de infecciones casuales $\beta_C$ pero, dado que este parámetro está fijo, el cambio será capturado por $\lambda$. A pesar de que esto puede ser impreciso, notamos que intentar estimar muchos parámetros con efectos similares en los datos pude llevar a una sobreparametrización y falta de identificabilidad.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_caba_data_state_vars.eps}
+    \caption{}
+    \label{fig:abm_caba_data_state_vars}
+\end{figure}
+
+La Figura \ref{fig:abm_caba_data_state_vars} muestra algunas de las variables agregadas del sistema sumadas a través de todos los barrios. Las muertes acumuladas tienen menor varianza que el resto de las variables. De manera similar a los experimentos con observaciones sintéticas, esto se debe a que las muertes son directamente observadas mientras que las otras variables son observadas a través de la suma de varios estados epidemiológicos.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_caba_data_aggregated.eps}
+    \caption{}
+    \label{fig:abm_caba_data_aggregated}
+\end{figure}
+
+En la Figura \ref{fig:abm_caba_data_aggregated} se puede ver el número de casos diarios. En los datos se puede ver el efecto del subreporte de los fines de semana pero las estimaciones suavizan en parte este efecto. La Figura \ref{fig:abm_caba_data_disaggregated} se muestran los mismos valores pero desagregados por comuna. Todas ellas tienen tendencias similares con algunas diferencias en la forma de los picos epidémicos pero estos efectos son capturados por el EnKF.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_caba_data_disaggregated.eps}
+    \caption{}
+    \label{fig:abm_caba_data_disaggregated}
+\end{figure}
