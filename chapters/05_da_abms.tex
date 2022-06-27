@@ -252,19 +252,30 @@ Las variables observadas serán los confirmados acumulados como la suma de $I_M$
 
 La Figura \ref{fig:abm_tests} muestra los resultados para los infectados leves, los asintomáticos y la positividad global y el testeo. El comportamiento de los asintomáticos es capturado por el EnKF pero como es de esperarse las estimaciones de los infectados leves son más precisas. Esto es porque los asíntomáticos son solo informados a través de la positividad global
 mientras que los infectados leves también son observados mediante los infectados acumulados por barrio. La discrepancia entre los asintomáticos y el valor real de esta variable está correlacionada con la discrepancia entre la positividad global y estimada. Esto sugiere que mientras más sepamos sobre la circulación general del virus, mejor podrá ser la inferencia sobre los casos no reportados. La Figura \ref{fig:abm_tests_asymptomatic_prob} muestra las estimaciones de la probabilidad $q_A$. Se ve en los primeros ciclos de spin-up una reducción de la varianza inicial y luego el ensamble sincroniza con el valor real. Cuando la positividad es menor, antes y después del pico epidémico, la varianza del ensamble es mayor que durante el pico epidémico en donde las estimaciones son más precisas y de menos varianza. Este efecto se debe a que la positividad sólo será informativa de la proporción de asintomáticos en la medida que haya suficientes casos como para que las correlaciones entre los testeos y el parámetro sean lo suficientemente fuertes.
-
-
-\begin{figure}[h!]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_tests.eps}
     \caption{}
     \label{fig:abm_tests}
 \end{figure}
-\begin{figure}[h!]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_tests_asymptomatic_prob.eps}
     \caption{}
     \label{fig:abm_tests_asymptomatic_prob}
+\end{figure}
+
+\subsubsection{Respuesta al error de modelo}
+
+En este experimento buscamos evaluar si la metodología es lo suficientemente robusta como para responder en situaciones en que el modelo está erróneamente especificado. Para ello diseñamos el experimento de manera que la corrida natural y las del EnKF tienen configuraciones diferentes. Para generar las observaciones sintéticas, el número de contactos diarios va a ser muestreado, no de una Poisson como hicimos hasta ahora, sino de una distribución geométrica con parámetro $p = 0.5$. Por el otro lado, para la inferencia con EnKF usaremos la distribución de Poisson como en experimentos anteriores. Adicionalmente usaremos distintas distribuciones de hogares: para la corrida natural tomaremos $p_H = (0.33, 0.27, 0.2, 0.13, 0.07)$ lo que resulta en que las casas con más agentes son más infrecuentes que las que tienen menos habitantes, lo cual es esperable en un medio urbano. Para el EnKF utilizaremos esta distribución pero también repetiremos el experimento con una distribución uniforme de hogares $p_H = (0.2, 0.2, 0.2, 0.2, 0.2)$ y otra ``desbalanceada'' $p_H = (0.07, 0.13, 0.2, 0.27, 0.33)$ en la que los hogares de más habitantes son más frecuentes que los de menos. La utilización de ditribuciones de hogares diferentes va a resultar en distintas dinámicas de propagación debido a la variación en la estructura de la red de contactos. El parámetro $\lambda$ se estima mediante estado aumentado.
+
+La Figura \ref{fig:abm_housing_dist_KL} muestra las trayectorias de las estimaciones de $\lambda$ para los distintos escenarios de distribución de hogares. La distribución para el número de contactos para el EnKF es una Poisson mientras que para la corrida real es geométrica, por lo tanto la estimación de $\lambda$ debería parametrizar al número de contactos diarios de manera que se parezca lo más posible a una geométrica. Para evaluar el parecido entre distribuciones entonces calculamos para una grilla de valores de $\lambda$ la divergencia de Kullback-Leibler (KL) entre la Poisson y la verdadera distribución geométrica. Esta cantidad codifica cuánta información se pierde al utilizar la distribución Poisson respecto a la geométrica. En la Figura \ref{fig:abm_housing_dist_KL} también se muestra la divergencia KL junto con las estimaciones de $\lambda$. Estas están en regiones de baja divergencia KL: esto significa que el sistema se auto-calibra buscando el valor de $\lambda$ que mejor pueda reproducir las características del modelo original. La mejor estimación en términos de divergencia KL es para la corrida que utiliza la distribución real de hogares, lo cual es esperable. La distribución uniforme de hogares tiene más casas de mayor tamaño y la desbalanceada aún más. Debido a los contactos doméstico esto causa una dispersión más rápida de la enfermedad. El hecho de que las estimaciones de $\lambda$ sea menor en estos casos se debe a que el sistema se auto-calibra y por lo tanto compensa por la distribución de hogares incorrecta que produce un mayor número de contactos domésticos (que son más contagiosos).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{abm_housing_dist_KL.eps}
+    \caption{}
+    \label{fig:abm_housing_dist_KL}
 \end{figure}
 
 \subsection{Datos CABA, Argentina}
