@@ -1,4 +1,4 @@
-\chapter{Asimilación de datos}
+\chapter{Asimilación de datos} \label{chp:da}
 
 \ma{En general me queda la impresion que este capitulo necesita de mas referencias particularmente de mencionar que es el estado del arte en las tecnicas que se describen.}
 
@@ -302,7 +302,7 @@ Este filtro de partículas que incorpora remuestreo suele ser denominado SIR (\t
 \caption{Filtro de partículas SIR}
 \end{algorithm}
 
-Una de las implementaciones más sencillas de este tipo de filtro es el llamado \textit{bootstrap} y consiste en tomar la distribución propuesta como la probabilidad de transición, i.e., $q(\v x_t | \v x_{t-1}, \v y_t) = p(\v x_t | \v x_{t-1})$. Esto significa que el muestreo de partículas es simpemente aplicar el modelo de transición a todas las partículas del tiempo anterior. Además, las implementaciones más comunes del filtro \textit{bootstrap} hacen remuestreo en cada paso de tiempo. Esto significa que los pesos son sólo calculados para hacer remuestreo pero las partículas que representan a la distribución filtrante tienen pesos uniformes y no hay que almacenarlos. Además esto simplifica el cómputo de los pesos a la expresión $w_{t}^{(i)} \propto p(\v y_t | \v x_t^{(i)})$. En \ref{algo:bootstrap_pf} especificamos este método.
+Una de las implementaciones más sencillas de este tipo de filtro es el llamado \textit{bootstrap} \citep{Gordon1993} y consiste en tomar la distribución propuesta como la probabilidad de transición, i.e., $q(\v x_t | \v x_{t-1}, \v y_t) = p(\v x_t | \v x_{t-1})$. Esto significa que el muestreo de partículas es simpemente aplicar el modelo de transición a todas las partículas del tiempo anterior. Además, las implementaciones más comunes del filtro \textit{bootstrap} hacen remuestreo en cada paso de tiempo. Esto significa que los pesos son sólo calculados para hacer remuestreo pero las partículas que representan a la distribución filtrante tienen pesos uniformes y no hay que almacenarlos. Además esto simplifica el cómputo de los pesos a la expresión $w_{t}^{(i)} \propto p(\v y_t | \v x_t^{(i)})$. En \ref{algo:bootstrap_pf} especificamos este método.
 
 \begin{algorithm}[H]\label{algo:bootstrap_pf}
     Muestrear partículas iniciales: $\{\v x_0^{a, (i)}\}_{i=1}^{N_p} \sim p(\v x_0)$
@@ -323,7 +323,7 @@ Una de las implementaciones más sencillas de este tipo de filtro es el llamado 
 \caption{Filtro de partículas bootstrap}
 \end{algorithm}
 
-La elección de la distribución de transición como distribución propuesta en el filtro de partículas \textit{bootstrap} significa que el muestreo de partículas no es más que evolucionar cada partícula del tiempo anterior utilizando el modelo. Las partículas muestradas constituyen entonces un pronóstico. Esta interpretación no es generalizable al filtro SIR general. Para indicar esto en \ref{algo:bootstrap_pf} usamos el supraíndice $f$ (por \textit{forecast}) en las partículas del pronóstico y $a$ en las de análisis.  \ma{citar a Gordon et al como el pionero}
+La elección de la distribución de transición como distribución propuesta en el filtro de partículas \textit{bootstrap} significa que el muestreo de partículas no es más que evolucionar cada partícula del tiempo anterior utilizando el modelo. Las partículas muestradas constituyen entonces un pronóstico. Esta interpretación no es generalizable al filtro SIR general. Para indicar esto en \ref{algo:bootstrap_pf} usamos el supraíndice $f$ (por \textit{forecast}) en las partículas del pronóstico y $a$ en las de análisis.
 
 El cómputo de los pesos está dado por la verosimilitud observacional por lo que estos cuantifican cuán afín es cada partícula a la observación. Por su parte, la forma de transformar al conjunto de partículas de pronóstico en una muestra filtrante es a través del remuestreo. El remuestreo, al ser con reemplazo, tiene el efecto de multiplicar las partículas con pesos altos (cercanas a la observación) y eliminar las partículas con pesos bajos (lejanas a la observación). Este mecanismo se suele comparar con la selección natural, sólo sobreviven y se reproducen las partículas ``más aptas''.
 
