@@ -206,7 +206,7 @@ Se puede ver que mientras el RMSE disminuye, la verosimilitud aumenta. Notamos t
     \label{fig:em_enks_rmse_llik}
 \end{figure}
 
-\subsection{Online EM} \label{sec:onlineEM}
+\subsection{EM \textit{online}} \label{sec:onlineEM}
 
 Aquí expondremos el algoritmo \textit{online} basado en EM cuyo desarrollo fue publicado en \cite{Cocucci2021}. El objetivo es obtener una técnica que actualice la estimación del parámetro con cada nueva observación de manera que se puedan descartar las observaciones anteriores que ya han sido procesadas. Si tomamos como punto de partida las ecuaciones \ref{eq:batchEM_SQ} y \ref{eq:batchEM_SR} podemos ver que, cada sumando corresponde a una observación pero que si quisiéramos agregar una observación nueva (correspondiente al tiempo $T+1$) todos estos sumandos deberían ser recomputados. Esto es debido a que los valores esperados están condicionados a toda la ventana observacional anterior, $\v y_{1:T}$. Las nuevas distribuciones predictivas y filtrantes, $p(\v x_{T+1} | \v y_{1:T})$ y $p(\v x_{T+1} | \v y_{1:T+1})$ pueden ser obtenidas o aproximadas utilizando las anteriores distribuciones predictivas y filtrantes que no necesitan ser cambiadas por la incorporación de la nueva observación. Sin embargo, las distribuciones suavizantes $p(\v x_t | \v y_{1:T})$ deben ser cambiadas en cada $t$ por las que tienen en cuenta a la nueva observación, $p(\v x_t | \v x_{1:T+1})$.
 
@@ -337,12 +337,11 @@ podemos ver la similaridad entre este método y el EM-EnKS presentado en el algo
 
 En la implementación de muestreo de importancia, los ensambles representan muestras de las distribuciones. En esta versión basada en EnKF también pero con la importante salvedad de que las muestras están computadas bajo suposiciones de Gaussianidad. Esto significa que se considera que las distribuciones pueden ser representadas solamente con los dos primeros momentos mientras que los de orden superior son ignorados.
 
-\section{EM \textit{online}: evaluación experimental}
+\subsection{EM \textit{online}: evaluación experimental}
 
 Expondremos aquí una evaluación experimental del método en distintos escenarios de interés para aplicaciones en asimilación de datos. La configuración de los experimentos consiste en generar trayectorias reales de las variables de estado, mediante la llamada simulación real o natural, y de estas obtener observaciones sintéticas con parametrizaciones conocidas para $\v Q$ y $\v R$. Luego aplicaremos el EM \textit{online} para estimar las variables de estado e importantemente la parametrización original. Sólo utilizamos como fuente de informacion las observaciones sintéticas, es decir que el sistema desconoce las covarianzas y la simulación natural. Utilizaremos el Algoritmo \ref{algo:onlineEM_OSS} con el EnKF estocástico (Algoritmo \ref{algo:enkf_pert_obs}) y el paso de suavizado hacia atrás mediante el RTS-EnKS (Algoritmo \ref{algo:enks}) pero realizando un solo paso hacia atrás. Daremos a esta implementación el nombre OSS-EnKF (por \textit{one step smoother}). Por otro lado, para el Algoritmo \ref{algo:onlineEM_IS} utilizaremos dos implementaciones distintas, una con el EnKF estocástico la cual llamaremos IS-EnKF (por \textit{importance sampling}) y otra con el VMPF la cual denominaremos IS-VMPF. Para esta última implementación notamos que la estimación de la matriz de covarianzas del error de modelo $\v Q$ tiene una relevancia adicional pues utilizamos un kernel $K(\v x, \v x') = (\v x - \v x')^T \beta \v Q (\v x - \v x')$, por lo que el ancho de banda del kernel dependerá de las estimaciones de $\v Q$. Para todas las versiones del EM \textit{online} utilizaremos una tasa de aprendizaje $\gamma_t = t^{-\alpha}$ \citep{Legland1997} donde el valor por defecto es $\alpha = 0.6$ con la excepción de un experimento en el que evaluaremos la performance para distintos valores de $\alpha$. En base a los resultados de dicho experimento es que tomamos el valor por defecto $\alpha = 0.6$.
 
-\paragraph{Modelo Lorenz-63: consistencia respecto a valores iniciales} \
-
+\subsubsection{Modelo Lorenz-63: consistencia respecto a valores iniciales}
 En este experimento utilizamos el modelo Lorenz-63 y estimamos $\v Q$ con las 3 implementaciones, considerando a $\v R$ conocido. Esto se repite para distintas semillas de los generadores aleatorios y distintos valores iniciales del parámetro. El objetivo es evaluar la consistencia de las estimaciones y la comparabilidad de los métodos. La matriz $\v Q$ utilizada en en la simulación natural es un múltiplo de la identidad. En la figura \ref{fig:lor63_seeds} se muestran las estimaciones de la media de la diagonal de $\v Q$, es decir la varianza media del error de modelo. Notemos que las trayectorias grises corresponden a repeticiones del experimento y no deben ser confundidas con miembros de ensamble, de hecho el método produce una única estimación por iteración. Sin embargo, las repeticiones nos dan una idea de la incerteza de las estimaciones la cual se estabiliza alrededor de los 500 ciclos. Los tres métodos estiman correctamente el valor real del parámetro aunque los basados en importance sampling muestran una ligera subestimación. La velocidad de convergencia y la variabilidad en las estimaciones es también similar en todos los métodos.
 \begin{figure}[h]
     \centering
@@ -351,8 +350,7 @@ En este experimento utilizamos el modelo Lorenz-63 y estimamos $\v Q$ con las 3 
     \label{fig:lor63_seeds}
 \end{figure}
 
-\paragraph{Modelo Lorenz-63: consistencia respecto a valores iniciales} \
-
+\subsubsection{Modelo Lorenz-63: consistencia respecto a valores iniciales}
 Para evaluar el efecto de la tasa de aprendizaje en las estimaciones realizamos un experimento similar al anterior: estimamos una matriz $\v Q$ diagonal considerando $\v R$ conocida en el modelo Lorenz-63. En cada simulación utilizamos el mismo set de observaciones sintéticas pero cambiamos el valor de $\alpha$ de la tasa de aprendizaje. En la figura \ref{fig:lor63_alphas} se muestran las estimaciones para la media de la diagonal de $\v Q$. Para valores mayores de $\alpha$ la convergencia es lenta e incluso puede no lograrse en 10000 ciclos de asimilación. Por otro lado, para valores más pequeños se obtiene una convergencia mucho más rápida. Las estimaciones que produce el método son una ponderación entre la estimación de la iteración anterior con el promedio de los estadísticos suficientes correspondientes a la observación que está siendo procesada. Cuando $\alpha$ es más cercano a 1 se da más peso a la estimación anterior y menos a la información introducida por la última observación. Esto puede interpretarse como que el método tiene más memoria por lo que las nuevas iteraciones no cambian sustancialmente las estimaciones, con lo cual estas resultan menos ruidosas pero la convergencia se realentiza. Por el contrario, para valores menores de $\alpha$ se le da mayor peso a los estadísticos suficientes correspondientes a la última observación y menos a las estimanciones anteriores. Esto acelera la convergencia pero las trayectorias se hacen más ruidosas debido al error de muestreo.
 \begin{figure}[h]
     \centering
@@ -361,8 +359,7 @@ Para evaluar el efecto de la tasa de aprendizaje en las estimaciones realizamos 
     \label{fig:lor63_alphas}
 \end{figure}
 
-\paragraph{Modelo Lorenz-96: estimación de covarianzas} \
-
+\subsubsection{Modelo Lorenz-96: estimación de covarianzas}
 En aplicaciones geofísicas es normal que las variables estén correlacionadas espacialmente. En estos sistemas es natural que el error de modelo también reproduzca estas correlaciones. Esto resulta en que la matriz $\v Q$ tenga una estructura con valores no nulos fuera de la diagonal. Para este conjunto de experimentos consideraremos el modelo Lorenz-96 \citep{Lorenz1996}, determinado por las siguientes ecuaciones diferenciales:
 \begin{align}
     \frac{d X_n}{d t} = X_{n-1}(X_{n+1} - X_{n-2}) - X_n + F \hspace{1em} \forall n = 1, ..., N_x 
@@ -370,7 +367,7 @@ En aplicaciones geofísicas es normal que las variables estén correlacionadas e
 Tomaremos condiciones de frontera periódicas, es decir, $X_{-1} = X_{N_x-1}, X_0 = X_{N_x}, X_1 = X_{N_x+1}$. Este modelo busca emular el comportamiento de una variable atmosférica en un círculo de latitud con un forzado externo representado por $F$. Consideraremos, además de la varianza del error, representado por valores positivos en la diagonal de $\v Q$, covarianzas positivas e uniformes entre variables adyacentes. Esto significa que $\v Q_{i, (i+1)\%N_x} = \sigma_{ady}^2 > 0 \hspace{1em} \forall i = 1, ..., N_x$. Los valores en la diagonal también serán uniformes de manera que $\v Q_{i, i} = \sigma_{diag}^2 > 0 \hspace{1em} \forall i = 1, ..., N_x$. Para estimar esta matriz utilizamos las tres implementaciones del EM \textit{online} y también con 25 iteraciones del EM \textit{offline} en la implementación del Algoritmo \ref{algo:em_enks}. Notemos que la versión \textit{online} es una aproximación del \textit{offline} por lo que la segunda constituye una base de comparación razonable para la primera.
 
 A pesar de que la matriz $\v Q$ tiene una estructura que admite una representación de sólo dos parámetros, las estimaciones producidas por cualquiera de los métodos son entrada por entrada (salvo simetría pues los estadísticos suficientes son simétricos). Para verificar que el comportamiento de las estimaciones en cada entrada es consistente mostramos en la figura \ref{fig:lor96_online_entrywise} las trayectorias correspondientes. Podemos observar que estas se agrupan correctamente alrededor de los valores de la matriz $\v Q$ original.
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_online_entrywise.eps}
     \caption{}
@@ -394,7 +391,7 @@ Finalmente, realizamos un experimento similar pero considerando que la matriz $\
 
 \clearpage
 
-\paragraph{Modelo Lorenz-96: estimación conjunta de $\v Q$ y $\v R$} \
+\subsubsection{Modelo Lorenz-96: estimación conjunta de $\v Q$ y $\v R$} \
 
 Hasta ahora nos hemos enfocado en la especificación del error de modelo puesto que es una fuente de incerteza de la cual, en la mayor parte de los casos, no tenemos forma de determinar debido a que suele provenir del desconocimiento del proceso subyacente. El error observacional por otro lado, muchas veces se puede aproximar pues conocemos mejor el proceso observacional. Sin embargo, como hemos visto en la sección \ref{sec:model_obs_error} la especificación de ambas incertezas es importante y de hecho existe interacción entre ambas cantidades. Por esto se hace importante estudiar la estimación conjunta de $\v Q$ y $\v R$. En este experimento lo hacemos tomando a ambas como matrices diagonales múltiplos de la identidad: $\v Q = \sigma_{\v Q}^2$ y $\v R = \sigma_{\v R}^2$. El modelo utilizado es el Lorenz-96 con 8 variables, todas observadas. Consideramos dos escenarios: en el primero tenemos errores observacionales y de modelo similares, $\sigma_{\v Q}^2 = 0.3$ y $\sigma_{\v R}^2 = 0.5$; mientras que en el segundo tomamos un error observacional mayor, $\sigma_{\v R}^2 = 1.5$. El efecto que se encuentra cuando $\v Q$ y $\v R$ son similares es que la verosimilitud tiene un máximo mejor definido. En la figura \ref{fig:lor96_contours} vemos los contornos de la verosimilitud en función de $\sigma_{\v Q}^2$ y $\sigma_{\v R}^2$ para ambos casos. El panel izquierdo corresponde al escenario de errores similares y se puede observar que el máximo es más definido que el escenario con errores disímiles del panel derecho. Además graficamos las trayectorias de las estimaciones para distintos valores iniciales. Se puede ver que cuando el máximo está mejor definido las estimaciones son más precisas. Finalmente notamos que los valores de la verosimilitud son menores en el caso de mayor error observacional, lo cual es esperable porque las observacions son menos precisas.
 
@@ -404,3 +401,7 @@ Hasta ahora nos hemos enfocado en la especificación del error de modelo puesto 
     \caption{}
     \label{fig:lor96_contours}
 \end{figure}
+
+\subsection{Discusión}
+
+La metodología de EM \textit{online} que desarrollamos muestra resultados prometedores y da respuesta a algunos de los desafíos que típicamente se presentan en escenarios de asimilación de datos. La técnica permite evitar el uso de suavizadores sobre grandes ventanas temporales lo que la hace computacionalmente menos costosa que las versiones por lotes del EM y especialmente adecuada para contextos de asimilación de datos secuencial. Es importante notar que la performance puede depender de la tasa de aprendizaje utilizada. La técnica permite la estimación de varianzas pero también covarianzas en los errores de las variables de estado y adicionalmente detecta coambios temporales lentos en los parámetros estocásticos. No evaluamos el desempeño del método en espacios de alta dimensionalidad ya que en estos casos las mismas técnicas de asimilación pueden comenzar a tener peor rendimiento debido a que se dificulta la representación de distribuciones mediante muestras en este tipo de espacios.

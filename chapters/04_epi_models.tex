@@ -56,7 +56,7 @@ Los trabajos \cite{Ionides2006} y posteriormente \cite{Shaman2012, Shaman2013} c
 
 A pesar de que las aplicaciones de técnicas de asimilación de datos a modelos epidemiológicos se comienzan a popularizar no se ha hecho particular foco en la estimación de errores observacionales y de modelo. Estas cantidades no sólo tienen interés en sí mismo para la comprensión de las incertezas del sistema sino que, como hemos visto en el Capítulo \ref{chp:error_treatment}, también afectan en la performance del sistema. En particular, el error observacional en modelos epidemiológicos tiene la complejidad de estar relacionado al reporte de casos lo cual puede ser una fuente de información poco precisa y cuya incereteza varía en el tiempo. Por estas cualidades realizamos para esta tesis experimentos preliminares de aplicación de el algoritmo EM online presentado en la sección \ref{sec:onlineEM} cuyos resultados presentamos a continuación.
 
-\subsection{Expermento: observaciones sintéticas} \label{sec:online_em_seird_synthetic}
+\subsection{Experimento: observaciones sintéticas} \label{sec:online_em_seird_synthetic}
 Para mostrar algunas de las capacidades de el EnKF acoplado con el EM online en un modelo epidemiológico realizamos un experimento con observaciones sintéticas sobre un modelo SEIRD definido por las siguientes ecuaciones diferenciales:
 \begin{align} \label{eq:seird}
     \frac{\partial S}{\partial t} &= -\beta \frac{SI}{N}\\
@@ -152,5 +152,7 @@ Los resultados dependen de la elección de las caminatas aleatorias en los pará
     \caption{Estimaciones del EM online de las varianzas de errores observacionales. Estas corresponden a los dos valores de la diagonal de las matrices de covarianzas $\v R_t$}
     \label{fig:seird_R_arg_data}
 \end{figure}
+
+\subsection{Discusión}
 
 Diseñamos estos experimentos para mostrar la potencial viabilidad del EM \textit{online} para estimación de errores en sistemas de asimilación de datos sobre modelos epidemiológicos. Este aspecto es habitualmente pasado por alto en trabajos de inferecia mediante en este tipo de sistema. En el experimento con observaciones sintéticas, salvo por la parametrización que se calibra con estado aumentado, el modelo utilizado es el mismo que se usa para generar los datos. En el caso de tener datos reales no es posible especificar un modelo perfecto por lo que los parámetros en el estado aumentado cumplen el rol de calibrar otras posibles deficiencias del modelo. Los resultados obtenidos evidencian la interdependencia entre el error observacional y de modelo y como estos afectan la performace general de las estimaciones que produce el sistema. Una posibilidad es incorporar error de modelo aditivo y estimar su matriz de covarianza $\v Q_t$ con el EM \textit{online} y de hecho algunos experimentos preliminares sigieren que esto es posible. Además las varianzas de las caminatas aleatorias en el estado aumentado podrían potencialmente ser estimadas de manera adaptativa como parte de la matriz $\v Q_t$. Otra posibilidad más sencilla para dar cuenta del error de modelo es la utilización de un factor de inflación en el ensamble (ver Sección \ref{sec:enkf}).
