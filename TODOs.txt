@@ -20,3 +20,4 @@ Formalidades:
 - Nombres de secciones: acrónimos o no?
 - no-lineal vs no lineal vs nolineal
 - Se usa $S$ para estadísticos suficientes y para covs muestrales en fórmulas de Kalman
+- ylabels en abm + datos caba

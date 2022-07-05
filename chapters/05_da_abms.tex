@@ -129,7 +129,7 @@ Al tiempo $t$ supongamos que tenemos un ensamble $\{ A_{t}^{f(j)} \}_{j=1}^{N_p}
 \end{center}
 \end{figure}
 
-\subsection{Metodologías de ajuste de agentes} \ref{sec:agents_adjustment}
+\subsection{Metodologías de ajuste de agentes} \label{sec:agents_adjustment}
 
 Para aplicar el esquema propuesto es necesario entonces construir una población de agentes consistente con el estado de las variables macro una vez que estas fueron actualizadas por el sistema de asimilación de datos. El problema es que para cada $j = 1, ..., N_p$ tendremos una discordancia entre las variables de estado de la población d agentes que tenemos como pronóstico $\v x_t^{f(j)} = \phi (A_t^{f(j)})$ y el valor corregido para las variables agregadas actualizadas $\v x_t^{a(j)}$. Nuestra aproximación al problema es utilizar la misma población que se tenía como pronónstico, es decir $\{A_t^{f(j)}\}_{j=1}^{N_p}$, y hacer los cambios necesarios para obtener $\{A_t^{a(j)}\}_{j=1}^{N_p}$ consistentes con $\{\v x_t^{a(j)}\}_{j=1}^{N_p}$. Esto está inspirado en que los agentes del análisis son una corrección de los del pronóstico. Mientras mejor sea el pronóstico, menos agentes deberán ser modificados. Sin embargo, la estructura interna de los agentes puede ser muy compleja, con muchos atributos más allá de los considerados por la función sintetizante $\phi$. Si estos atrubutos podrán ser ajustados de manera realista dependerá del ABM y de cuánto de la estructura interna de los agentes se ve representada en las variables del macro-estado.
 
