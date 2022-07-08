@@ -370,13 +370,13 @@ A pesar de que la matriz $\v Q$ tiene una estructura que admite una representaci
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_online_entrywise.eps}
-    \caption{}
+    \caption{Estimaciones entrada por entrada de $\v Q$ en líneas continuas diferenciados por tono de acuerdo al sector de la matriz al que pertenecen. Las líneas intermitentes indican los valores reales correspondientes para cada sector de la matriz.}
     \label{fig:lor96_online_entrywise}
 \end{figure}
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_online_batch.eps}
-    \caption{}
+    \caption{Panel superior: distancia Frobenious al verdadero valor de $\v Q$. Panel medio: Log-verosimilitud que se obtendría si se usara la estimación en cada ciclo para filtrar toda la ventana. Panel inferior: similar al panel medio pero considerando RMSE.}
     \label{fig:lor96_online_batch}
 \end{figure}
 En la figura \ref{fig:lor96_online_batch} se puede ver la distancia Frobenious de las estimaciones de todos los métodos. Los errores de las estimaciones en los métodos secuenciales se aproximan con velocidad similar entre ellos al error obtenido por el EM \textit{offline}. Además, para cada estimación de $\v Q$ se realizó un filtrado con el EnKF con $\v Q$ fijada en el valor de la estimación. Del resultado de estos filtrados computamos el RMSE de las varibles de estado y la log-verosimilitud obtenida. Se puede ver en la figura \ref{fig:lor96_online_batch} que la performance según estas métricas, son similares a las del EM \textit{batch}.
@@ -385,7 +385,7 @@ Finalmente, realizamos un experimento similar pero considerando que la matriz $\
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_varyingQ.eps}
-    \caption{}
+    \caption{Estimaciones para las distintas implementaciones de una matriz $\v Q$ que varía en el tiempo y con covarianzas fuera de la diagonal. En el panel superior se muestran las estimaciones correspondientes a la diagonal, en el medio de las covarianzas que corresponden a variables vecinas y en el inferior las del resto de la matriz (covarianzas de variables con más de un grado de separación).}
     \label{fig:lor96_varyingQ}
 \end{figure}
 
@@ -398,7 +398,7 @@ Hasta ahora nos hemos enfocado en la especificación del error de modelo puesto 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{lor96_contours.eps}
-    \caption{}
+    \caption{Estmaciones correspondientes a $\sigma_{\v Q}^2$ y $\sigma_{\v R}^2$ sobre contornos de la verosimilitud para los dos escenarios planteados. El panel derecho corresponde a los valores reales $\sigma_{\v Q}^2 = 0.3$ y $\sigma_{\v R}^2 = 0.5$ y el izquierdo a $\sigma_{\v Q}^2 = 0.3$ y $\sigma_{\v R}^2 = 1.5$ Las estimaciones están indicadas con puntos en escala de grises: comienzan con tonos oscuros y terminan en tonos claros. La barra de colores indica los valores de la verosimilitud dividida por un factor de $10^3$. Los puntos rojos indican los valores reales.}
     \label{fig:lor96_contours}
 \end{figure}
 

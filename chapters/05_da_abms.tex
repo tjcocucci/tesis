@@ -171,19 +171,19 @@ La Figura \ref{fig:abm_state_vars_moving_lambda} muestra los resultados de las v
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_state_vars_moving_lambda.eps}
-    \caption{}
+    \caption{Estimaciones de las variables de estado $I_M$ y $D$ en el panel superior y de $E$, $I_S$ y $H$ en el inferior. En líneas continuas las medias, en gris los miembros del ensamble y en líneas intermitentes los valores reales.}
     \label{fig:abm_state_vars_moving_lambda}
 \end{figure}
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_moving_lambda.eps}
-    \caption{}
+    \caption{Estimaciones de $\lambda$. Media en azul y miembros del ensamble en gris. La línea intermitente indica el valor real.}
     \label{fig:abm_moving_lambda}
 \end{figure}
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_housing_dist_moving_lambda.eps}
-    \caption{}
+    \caption{Proporción de infectados por tipo de hogar. Cada panel corresponde a distintos tamaños de hogar desde 1 habitante en panel superior a hogares de 5 habitantes en el panel inferior. Las líneas punteadas indican la proporción de habitantes en total (sin considerar estado epidemiológico) por cada tipo de hogar. Las líneas verdes señalan las proporciones de infectados de la corrida natural y las rojas las medias de las estimaciones mientras que las grises son las de los miebros de ensamble.}
     \label{fig:abm_housing_dist_moving_lambda}
 \end{figure}
 
@@ -199,7 +199,7 @@ La Figura \ref{fig:abm_matchings} muestra los resultados para ambos métodos de 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_matchings.pdf}
-    \caption{}
+    \caption{Proporción de aciertos (cantidad de agentes con coincidencia en el estado epidemiológico respecto a la corrida natural) para las 4 métricas distntas (una en cada panel). Las líneas grises corresponden a las corridas independientes y las líneas negras son sus respectivas medias. Las líneas rojas y azules con transparencias corresponden a los miembros de ensamble para las corridas con EnKF para el método de resdistribución aleatorizada (azul) y de cascada hacia atrás (rojo)}
     \label{fig:abm_matchings}
 \end{figure}
 
@@ -255,13 +255,13 @@ mientras que los infectados leves también son observados mediante los infectado
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_tests.eps}
-    \caption{}
+    \caption{Estimaciones de infectados leves, asintomáticos y positividad global. Las líneas grises corresponden a los miembros del ensamble y las contínuas a sus medias. Las líneas intermitentes indican los valores reales. En el panel inferior los puntos indican la positividad observada del testeo.}
     \label{fig:abm_tests}
 \end{figure}
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_tests_asymptomatic_prob.eps}
-    \caption{}
+    \caption{Estimaciones de la probabilidad $q_A$ de que un infectado leve sea asintomático. Las líneas grises indican a los miembros del ensamble, y la azul a su media. El valor real se representa con la línea intermitente}
     \label{fig:abm_tests_asymptomatic_prob}
 \end{figure}
 
@@ -273,7 +273,7 @@ La Figura \ref{fig:abm_housing_dist_KL} muestra las trayectorias de las estimaci
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_housing_dist_KL.eps}
-    \caption{}
+    \caption{Estimaciones de $\lambda$ para tres escenarios de distribución de hogares distintas. La curva roja representa a la divergencia KL y sus valores están en el eje superior del gráfico. Las líneas grises representan a mimbros del ensamble y las líneas sólidas correspondientes a sus medias}
     \label{fig:abm_housing_dist_KL}
 \end{figure}
 
@@ -285,7 +285,7 @@ La Figura \ref{fig:abm_caba_data_lambda} muestra las estimaciones de $\lambda$. 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_caba_data_lambda.eps}
-    \caption{}
+    \caption{Estimaciones de $\lambda$ junto a los casos diarios confirmados suavizados mediante una media móvil de 7 días (estos valores se reprsentan en el eje derecho de la gráfica). Los miembros del ensamble se indican con líneas grises.}
     \label{fig:abm_caba_data_lambda}
 \end{figure}
 
@@ -293,7 +293,7 @@ Es importante notar que sólo estimamos el parámetro $\lambda$ dejando al resto
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_caba_data_state_vars.eps}
-    \caption{}
+    \caption{Estimaciones de las variables de estado $I_M$ y $D$ en el panel superior y de $E$, $I_S$ y $H$ en el inferior. En líneas continuas las medias, en gris los miembros del ensamble.}
     \label{fig:abm_caba_data_state_vars}
 \end{figure}
 
@@ -301,7 +301,7 @@ La Figura \ref{fig:abm_caba_data_state_vars} muestra algunas de las variables ag
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_caba_data_aggregated.eps}
-    \caption{}
+    \caption{Estimaciones de infectados diarios en toda la ciudad. Las líneas grises indican mimbros del ensamble y la línea sólida su media. Las observaciones se representan con puntos.}
     \label{fig:abm_caba_data_aggregated}
 \end{figure}
 
@@ -310,7 +310,7 @@ En la Figura \ref{fig:abm_caba_data_aggregated} se puede ver el número de casos
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{abm_caba_data_disaggregated.eps}
-    \caption{}
+    \caption{Estimaciones de infectados diarios en cada comuna de la ciudad. Las comunas están numeradas del 1 al 15 y están ordenadas en la gráfica de izquierda a derecha y de arriba a abajo. Las líneas grises indican mimbros del ensamble y la línea sólida su media. Las observaciones se representan con líneas intermitentes.}
     \label{fig:abm_caba_data_disaggregated}
 \end{figure}
 
