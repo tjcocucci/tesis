@@ -1,5 +1,6 @@
 .vscode/
 **.aux
+**.bak
 **.bbl
 **.bcf
 **.blg
