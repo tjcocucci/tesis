@@ -22,7 +22,7 @@ y por lo tanto logramos la forma de la familia exponencial usando:
 
 \section{Punto crítico de la ELBO en caso Gaussiano}\label{appendix:null_grad_elbo}
 
-Aquí damos una solución para la ecuación \ref{eq:null_elbo_grad} en el caso Gaussiano utilizando la expresión de la densidad de probabilidad como mimembro de la familia exponencial desarrollada en \ref{appendix:exp_family}:
+Aquí damos una solución para la ecuación \ref{eq:null_elbo_grad} en el caso Gaussiano utilizando la expresión de la densidad de probabilidad como miembro de la familia exponencial desarrollada en \ref{appendix:exp_family}:
 \begin{align*}
     \nabla_{\gv\theta} \psi(\gv\theta) \cdot S - \nabla_{\gv\theta} A(\gv \theta) &= 0 \\
     -\frac{1}{2} \nabla_{\gv\Sigma}  (\v x- \gv\mu)^T \gv\Sigma^{-1}(\v x-\gv\mu) - \nabla_{\gv\Sigma} \frac{1}{2} \log |\gv\Sigma| &= 0 \\
@@ -54,4 +54,4 @@ Desarrollamos aquí la aproximación de Monte Carlo utilizada en \ref{eq:likelih
     &= \sum_{t=1}^{T} \log \int p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) d\v x_t \\
     &\approx \sum_{t=1}^{T} \log \frac{1}{N_p} \sum_{j=1}^{N_p} p(\v y_t | \v x_t^{f, (j)})
 \end{align*}
-donde las partículas $\{\v x_t^{f, (j)}\}_{j=1}^{N_p}$ están muestradas de la distribución de pronóstico $p(\v x_t | \v y_{1:t-1})$. La identidad utilizada en la primera línea se puede encontrar en \cite{Carrassi2017}
+donde las partículas $\{\v x_t^{f, (j)}\}_{j=1}^{N_p}$ están muestreadas de la distribución de pronóstico $p(\v x_t | \v y_{1:t-1})$. La identidad utilizada en la primera línea se puede encontrar en \cite{Carrassi2017}

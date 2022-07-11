@@ -49,7 +49,7 @@ El algoritmo \textit{forward-backward} está especificado en \ref{algo:ffbs}.
 \end{algorithm}
 
 
-La distribución predictiva se puede deducir integrando la ditribución de transición pesando con la distribución filtrante del paso anterior:
+La distribución predictiva se puede deducir integrando la distribución de transición pesando con la distribución filtrante del paso anterior:
 \begin{align}
     p(\v x_t | \v y_{1:t-1}) &= \int p(\v x_t, \v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Marginalización}\\
     &= \int p(\v x_t | \v x_{t-1}, \v y_{1:t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} && \text{Bayes}\\
@@ -175,7 +175,7 @@ donde hemos definido a $\v K_t = \v P_t^f \v H_t^T (\v R_t + \v H \v P_t^f \v H^
 
 \section{Filtro de partículas}\label{appendix:pf}
 
-Hacemos aquí una deducción de el filtro de partículas SIR. El objetivo es obtener representaciones de partículas $\{\v x_t^{(i)}, w_t^{(i)}\}_{i=1}^{N}$ tal que sea una aproximación empírica de $p(\v x_t | \v y_{1:t})$. Vamos a comenzar por considerar la distribución conjunta de las variables de estado condicionadas a las observaciones, $p(\v x_{0:t} | \v y_{1:t})$. Estamos considerando a las variables de estado desde el tiempo $0$ hasta el $t$, lo cual significa que esta es la densidad de probablidad de una trayectoria de las variables de estado en el tiempo. Claramente, si tenemos una muestra de esta distribución, las componentes correspondientes al tiempo $t$ constituirán una muestra de la probabilidad filtrante marginalizada $p(\v x_t | \v y_{1:t})$. Utilizando las propiedades Markovianas y la independencia condicional de las observaciones del modelo de Markov escondido podemos escribir:
+Hacemos aquí una deducción de el filtro de partículas SIR. El objetivo es obtener representaciones de partículas $\{\v x_t^{(i)}, w_t^{(i)}\}_{i=1}^{N}$ tal que sea una aproximación empírica de $p(\v x_t | \v y_{1:t})$. Vamos a comenzar por considerar la distribución conjunta de las variables de estado condicionadas a las observaciones, $p(\v x_{0:t} | \v y_{1:t})$. Estamos considerando a las variables de estado desde el tiempo $0$ hasta el $t$, lo cual significa que esta es la densidad de probabilidad de una trayectoria de las variables de estado en el tiempo. Claramente, si tenemos una muestra de esta distribución, las componentes correspondientes al tiempo $t$ constituirán una muestra de la probabilidad filtrante marginalizada $p(\v x_t | \v y_{1:t})$. Utilizando las propiedades Markovianas y la independencia condicional de las observaciones del modelo de Markov escondido podemos escribir:
 \begin{align*}
     p(\v x_{0:t} | \v y_{1:t}) \propto p(\v x_{0:t-1} | \v y_{1:t}) p(\v x_t | \v x_{t-1}) p(\v y_t | \v x_t)
 \end{align*}
@@ -204,7 +204,7 @@ Si adicionalmente dotamos a $q$ de ``Markovianidad'' en el sentido que $q(\v x_t
 
 \section{EnKF} \label{appendix:enkf}
 
-Para mostrar que la formulación del EnKF estocástico es correcta, basta probar que la media y covarianza que se obtiene de considerar a los mimbros del ensamble como variables aleatorias coinciden con las del filtro de Kalman tradicional, el cual da una solución exacta al problema. Supongamos inductivamente que las partículas a tiempo $t-1$ cumplen con esto y veamos que podemos obtener las fórmulas correctas a tiempo $t$.
+Para mostrar que la formulación del EnKF estocástico es correcta, basta probar que la media y covarianza que se obtiene de considerar a los miembros del ensamble como variables aleatorias coinciden con las del filtro de Kalman tradicional, el cual da una solución exacta al problema. Supongamos inductivamente que las partículas a tiempo $t-1$ cumplen con esto y veamos que podemos obtener las fórmulas correctas a tiempo $t$.
 
 Las partículas del pronóstico están definidas como 
 $$ \v x_t^{f, (i)} = \v M_t \v x_{t-1}^{a, (i)} + \gv\eta_t^{(i)}$$
