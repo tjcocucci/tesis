@@ -4,7 +4,6 @@ Introducción:
 - Motivación e historia
 
 DA:
-- Introducir variacional como MAP (Bishop)
 - 3DVAR Abarbanel
 - Monte Carlo: introducir con la integral y después hacer la aproximación de la densidad. Montecarlo methods in scientific computing Liu 
 - PF poner más del state-of-the-art:
@@ -12,6 +11,7 @@ DA:
     - Flujos de partículas: Bunch Godsill optimal importance density y Daum Huang non linear filters homotopy
 
 Formalidades:
+- italicas en términos extranjeros?
 - Error vs incerteza
 - Puntuación en ecuaciones
 - Gaussiana o gaussiana
