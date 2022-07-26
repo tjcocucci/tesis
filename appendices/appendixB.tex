@@ -1,7 +1,7 @@
 \chapter{Algoritmo EM}
 \section{Gaussiana multivariada como miembro de la familia exponencial}\label{appendix:exp_family}
 
-Aquí presentamos la representación de densidades de probabilidad de la familia exponencial y cómo se puede escribir a la Gaussiana como miembro de dicha familia. Luego damos la solución de la ecuación \ref{eq:null_elbo_grad} para encontrar el valor del parámetro que anula a la ELBO en el caso Gaussiano.
+Aquí presentamos la representación de densidades de probabilidad de la familia exponencial y cómo se puede escribir a la Gaussiana como miembro de dicha familia. Luego damos la solución de la Ecuación \ref{eq:null_elbo_grad} para encontrar el valor del parámetro que anula a la ELBO en el caso Gaussiano.
 
 Se dice que una probabilidad pertenece a la familia exponencial si su densidad de probabilidad, parametrizada por $\gv\theta$ puede ser escrita como:
 $$p(\v x; \gv\theta) = h(\v x) \exp(\psi(\gv\theta) \cdot S(\v x) - A(\gv\theta))$$
@@ -22,7 +22,7 @@ y por lo tanto logramos la forma de la familia exponencial usando:
 
 \section{Punto crítico de la ELBO en caso Gaussiano}\label{appendix:null_grad_elbo}
 
-Aquí damos una solución para la ecuación \ref{eq:null_elbo_grad} en el caso Gaussiano utilizando la expresión de la densidad de probabilidad como miembro de la familia exponencial desarrollada en \ref{appendix:exp_family}:
+Aquí damos una solución para la Ecuación \ref{eq:null_elbo_grad} en el caso Gaussiano utilizando la expresión de la densidad de probabilidad como miembro de la familia exponencial desarrollada en \ref{appendix:exp_family}:
 \begin{align*}
     \nabla_{\gv\theta} \psi(\gv\theta) \cdot S - \nabla_{\gv\theta} A(\gv \theta) &= 0 \\
     -\frac{1}{2} \nabla_{\gv\Sigma}  (\v x- \gv\mu)^T \gv\Sigma^{-1}(\v x-\gv\mu) - \nabla_{\gv\Sigma} \frac{1}{2} \log |\gv\Sigma| &= 0 \\

@@ -92,7 +92,7 @@ La fórmula \ref{eq:kf_mean_pred} para la media $\v x_t^f$ de la distribución p
 \begin{align*}
     \v x_t^f &= E[\v X_t | \v y_{1:t-1}] && \text{Definición de $\v x_t^f$} \\
     &= \int \v x_t p(\v x_t | y_{1:t-1}) d\v x_t && \text{Definición de $E$} \\
-    &= \int \v x_t \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} d\v x_t && \text{Eq. \ref{eq:forward_pred}} \\
+    &= \int \v x_t \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} d\v x_t && \text{Ec. \ref{eq:forward_pred}} \\
     &= \int p(\v x_{t-1} | \v y_{1:t-1}) \int \v x_t p(\v x_t | \v x_{t-1}) d\v x_t d\v x_{t-1} && \text{Intercambio de $\int$}\\ 
     &= \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v X_t | \v x_{t-1}] d\v x_{t-1} && \text{Definición de $E$}\\
     &= \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v M_t \v x_{t-1} + \gv\eta_t] d\v x_{t-1} && \text{Modelo}\\
@@ -106,19 +106,19 @@ Por otro lado, la fórmula \ref{eq:kf_var_pred} para la matriz de covarianza $\v
 \begin{align*}
     \v P_t^f &= Var[\v X_t | \v y_{1:t-1}] && \text{Definición de $\v P_t^f$}\\ 
     &= E[\v X_t \v X_t^T | \v y_{1:t-1}] - E[\v X_t | \v y_{1:t-1}] E[\v X_t | \v y_{1:t-1}]^T && \text{$Var[\v X] = E[\v X \v X^T] - E[\v X]E[\v X]^T$} \\
-    &= E[\v X_t \v X_t^T | \v y_{1:t-1}] - \v M_t \v x_{t-1}^a \v x_{t-1}^{aT} \v M_t^T && \text{Eq. \ref{eq:kf_mean_pred}}
+    &= E[\v X_t \v X_t^T | \v y_{1:t-1}] - \v M_t \v x_{t-1}^a \v x_{t-1}^{aT} \v M_t^T && \text{Ec. \ref{eq:kf_mean_pred}}
 \end{align*}
 Ahora desarrollamos el valor esperado del primer término:
 \begin{align*}
     E[&\v X_t \v X_t^T | \v y_{1:t-1}] = \int \v x_t \v x_t^T p(\v x_t | \v y_{1:t-1}) d\v x_t && \\
-     &= \int \v x_t \v x_t^T \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} d\v x_t && \text{Eq. \ref{eq:forward_pred}}\\
+     &= \int \v x_t \v x_t^T \int p(\v x_t | \v x_{t-1}) p(\v x_{t-1} | \v y_{1:t-1}) d\v x_{t-1} d\v x_t && \text{Ec. \ref{eq:forward_pred}}\\
     &= \int p(\v x_{t-1} | \v y_{1:t-1}) \int \v x_t \v x_t^T p(\v x_t | \v x_{t-1}) d\v x_t d\v x_{t-1} && \text{Intercambio de $\int$}\\
     &= \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v X_t \v X_t^T | \v x_{t-1}] d\v x_{t-1} && \text{Definición de $E$}\\
     &= \int p(\v x_{t-1} | \v y_{1:t-1}) (Var[\v X_t | \v x_{t-1}] && \text{$E[\v X \v X^T] = Var[\v X]^T + E[\v X]E[\v X]^T$}\\
     &\hspace{2em} + E[\v X_t | \v x_{t-1}]E[\v X_t | \v x_{t-1}]^T) d\v x_{t-1} && \\
     &= \int p(\v x_{t-1} | \v y_{1:t-1}) Var[\v X_t | \v x_{t-1}] d \v x_{t-1} && \text{Linealidad de $\int$}\\
     &\hspace{2em} + \int p(\v x_{t-1} | \v y_{1:t-1}) E[\v X_t | \v x_{t-1}]E[\v X_t | \v x_{t-1}]^T) d\v x_{t-1} && \\
-    &= \int p(\v x_{t-1} | \v y_{1:t-1}) \v Q_t d \v x_{t-1} && \text{Eq. \ref{eq:kf_forward}}\\
+    &= \int p(\v x_{t-1} | \v y_{1:t-1}) \v Q_t d \v x_{t-1} && \text{Ec. \ref{eq:kf_forward}}\\
     &\hspace{2em} + \int p(\v x_{t-1} | \v y_{1:t-1}) \v M_t \v x_{t-1} \v x_{t-1}^T \v M_t^T d\v x_{t-1} \\
     &= \v Q_t + \v M_t \int p(\v x_{t-1} | \v y_{1:t-1}) \v x_{t-1} \v x_{t-1}^T d\v x_{t-1} \v M_t^T && \text{$\v M_t$ lineal}\\
     &= \v Q_t + \v M_t E[\v X_{t-1} \v X_{t-1}^T | \v y_{1:t-1}] \v M_t^T && \text{Definición de $E$}\\
@@ -133,7 +133,7 @@ Por lo tanto al combinar las expresiones obtenemos el resultado:
 
 Para obtener las fórmulas de la media y covarianza de la distribución filtrante debemos usar la ecuación de análisis del algoritmo \textit{forward-backwards}:
 \begin{align*}
-    p(\v x_t | \v y_{1:t}) &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) && \text{Eq. \ref{eq:forward_filt}} \\
+    p(\v x_t | \v y_{1:t}) &\propto p(\v y_t | \v x_t) p(\v x_t | \v y_{1:t-1}) && \text{Ec. \ref{eq:forward_filt}} \\
     &\propto \exp((\v y_t - \v H_t \v x_t)^T \v R_t^{-1} (\v y_t - \v H_t \v x_t) && \text{Densidades Gaussianas}\\ 
     &+ (\v x_t - \v x_t^f)^T \v (\v P_t^{f})^{-1} (\v x_t - \v x_t^f)) \\
     &\propto \exp(\v x_t^T (\v (\v P_t^f)^{-1} + \v H^T \v R_t^{-1} \v H_t) \v x_t && \text{Distribución}\\
