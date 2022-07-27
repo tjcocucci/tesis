@@ -1,11 +1,7 @@
 TODOs
 
-Introducción:
-- Motivación e historia
-
 DA:
 - 3DVAR Abarbanel
-- Monte Carlo: introducir con la integral y después hacer la aproximación de la densidad. Montecarlo methods in scientific computing Liu 
 - PF poner más del state-of-the-art:
     - Localización con referencia a porterjoy connective local particle filter
     - Flujos de partículas: Bunch Godsill optimal importance density y Daum Huang non linear filters homotopy
@@ -14,10 +10,6 @@ Formalidades:
 - italicas en términos extranjeros?
 - Error vs incerteza
 - Puntuación en ecuaciones
-- Gaussiana o gaussiana
 - Overbar en medias (filtro de Kalman: xf, xa)
-- Figura vs Fig; Algo. vs Algoritmo; Ec. vs Ecuación (también decidir mayúscula o minúscula)
 - Nombres de secciones: acrónimos o no?
-- no-lineal vs no lineal vs nolineal
 - Se usa $S$ para estadísticos suficientes y para covs muestrales en fórmulas de Kalman
-- ylabels en abm + datos caba
