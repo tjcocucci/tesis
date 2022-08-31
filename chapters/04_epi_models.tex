@@ -2,8 +2,6 @@
 
 \section{Modelos compartimentales}
 
-\ma{citar paper Santi}
-
 Para modelar la propagación de enfermedades infecciosas, es muy habitual utilizar modelos compartimentales basados en ecuaciones diferenciales. Estos pueden ser utilizados para predecir y comprender situaciones epidemiológicas, ayudar a la toma de decisiones y simular escenarios hipotéticos así como también se pueden utilizar para estimar parámetros. Su origen se remonta a los años 20 del siglo pasado y suele atribuirse a \cite{Kermack1927}. Estos consisten en modelar la población distinguiendo subpoblaciones de acuerdo a categorías epidemiológicas. Por ejemplo, el emblemático modelo SIR, distingue a las subpoblaciones susceptible ($S$), infectada ($I$) y recuperada ($R$). La evolución de estas variables se puede expresar mediante el siguiente sistema de ecuaciones diferenciales,
 \begin{align} \label{eq:sir}
     \frac{\partial S}{\partial t} &= -\beta \frac{SI}{N}\\
