@@ -24,10 +24,10 @@ divnorm=colors.TwoSlopeNorm(0.95)
 itrue = np.where(abs(sQest-0.5) < 1e-6)[0][0]
 jtrue = np.where(abs(sRest-0.5) < 1e-6)[0][0]
 
-sns.heatmap(rmses, ax=ax[0], cmap='RdBu', cbar_kws=dict(use_gridspec=False, location="top"))
+sns.heatmap(rmses, ax=ax[0], cmap='RdBu_r', cbar_kws=dict(use_gridspec=False, location="top"))
 sns.heatmap(coverages, ax=ax[1], cmap='RdBu', norm=divnorm, cbar_kws=dict(use_gridspec=False, location="top"))
-ax[0].add_patch(Rectangle((itrue, jtrue), 1, 1, fill=False, edgecolor='blue', lw=3))
-ax[1].add_patch(Rectangle((itrue, jtrue), 1, 1, fill=False, edgecolor='blue', lw=3))
+ax[0].add_patch(Rectangle((itrue, jtrue), 1, 1, fill=False, edgecolor='red', lw=3))
+ax[1].add_patch(Rectangle((itrue, jtrue), 1, 1, fill=False, edgecolor='red', lw=3))
 
 ax[0].set_yticks(np.arange(1.5, len(sQest), 2))
 ax[1].set_yticks(np.arange(1.5, len(sQest), 2))
