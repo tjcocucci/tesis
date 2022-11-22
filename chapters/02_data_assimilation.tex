@@ -186,7 +186,7 @@ Esto constituye un sistema lineal que admite la expresión:
         v_{t-1}
     \end{pmatrix*}}_{\v x_{t-1}} \label{eq:oscillator_matrix_eq}
 \end{align}
-Adicionalmente incorporamos al modelo ruido Gaussiano aditivo constante $\gv\eta_t \sim \mathcal{N}(\v 0, \v Q)$ para obtener una expresión como \ref{eq:kf_forward}. Para el modelo observacional consideraremos que sólo obtenemos datos de la posición utilizando la matriz $\v H_t = (0, 1)$ y que estos datos tienen error aditivo $\gv\nu_t \sim \mathcal{N}(\v 0, \v R)$.
+Adicionalmente incorporamos al modelo ruido Gaussiano aditivo constante $\gv\eta_t \sim \mathcal{N}(\v 0, \v Q)$ para obtener una expresión como \ref{eq:kf_forward}. Para el modelo observacional consideraremos que sólo obtenemos datos de la posición utilizando la matriz $\v H_t = (1, 0)$ y que estos datos tienen error aditivo $\gv\nu_t \sim \mathcal{N}(\v 0, \v R)$.
 
 \begin{figure}[t]
     \centering
@@ -230,7 +230,7 @@ Vamos a introducir aquí dos familias de métodos basados en ensambles: los filt
 \subsection{Monte Carlo secuencial}
 
 
-Los filtros de partículas son también conocidos como métodos de Monte Carlo secuencial ya que utilizan el esquema secuencial de dos pasos de predicción-análisis descrito por las Ecuaciones \ref{eq:forward_pred} y \ref{eq:forward_filt}. De hecho, el enfoque de estos métodos es el de resolver las integrales de estas ecuaciones, no de manera explícita sino mediante aproximaciones de Monte Carlo. Esto significa que si tenemos una función de densidad de probabilidades $p$ y una conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ muestreadas de manera independiente con esta probabilidad, i.e. $\v x^{(i)}\sim p$, entonces, por la ley de los grandes números, se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas:
+Los filtros de partículas son también conocidos como métodos de Monte Carlo secuencial ya que utilizan el esquema secuencial de dos pasos de predicción-análisis descrito por las Ecuaciones \ref{eq:forward_pred} y \ref{eq:forward_filt}. De hecho, el enfoque de estos métodos es el de resolver las integrales de estas ecuaciones, no de manera explícita sino mediante aproximaciones de Monte Carlo. Esto significa que si tenemos una función de densidad de probabilidades $p$ y un conjunto de partículas $\{\v x^{(i)}\}_{i=1}^N$ muestreadas de manera independiente con esta probabilidad, i.e. $\v x^{(i)}\sim p$, entonces, por la ley de los grandes números, se pueden aproximar valores esperados en base a la distribución $p$ utilizando la media muestral de las partículas:
 \begin{align*}
     \frac{1}{N}\sum_{i=1}^N f(\v x^{(i)}) \xrightarrow{c. s.} \int f(\v x) p(\v x) d \v x
 \end{align*}
