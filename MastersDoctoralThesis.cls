@@ -183,7 +183,13 @@
 %	REQUIRED PACKAGES
 %----------------------------------------------------------------------------------------
 
-\RequirePackage{babel} % Required for automatically changing names of document elements to languages besides english
+% \RequirePackage{babel} % Required for automatically changing names of document elements to languages besides english
+
+\renewcommand{\chaptername}{Capítulo}
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
+\renewcommand\appendixname{Apéndice}
+\renewcommand{\contentsname}{Tabla de contenidos}
 
 \RequirePackage{scrbase} % Required for handling language-dependent names of sections/document elements
 

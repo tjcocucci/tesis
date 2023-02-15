@@ -3,15 +3,16 @@ FIGFILES := figs/$(wildcard *.eps)
 BIBFILES=bibliography.bib
 CHAPTERS=chapters
 APPENDICES=appendices
+LATEX = pdflatex
 
 all: $(FILENAME).bbl
-	pdflatex $(FILENAME).tex
+	$(LATEX) $(FILENAME).tex
 
 $(FILENAME).bbl: $(BIBFILES)
-	pdflatex $(FILENAME).tex
+	$(LATEX) $(FILENAME).tex
 	biber $(FILENAME)
-	pdflatex $(FILENAME).tex
-	pdflatex $(FILENAME).tex
+	$(LATEX) $(FILENAME).tex
+	$(LATEX) $(FILENAME).tex
 
 tar:
 	tar -czvf main.tar.gz $(FILENAME).tex $(FIGFILES) $(CHAPTERS)/*.tex \
